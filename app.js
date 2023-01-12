@@ -5,6 +5,8 @@ const logger = require('morgan');
 const cors = require('cors');
 const hpp = require('hpp')
 const fileUpload = require("express-fileupload");
+const db = require('./db/db.js'); // db 불러오기
+db();
 
 // dotenv
 require("dotenv").config();
