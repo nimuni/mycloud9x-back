@@ -1,11 +1,8 @@
-module.exports = (app) => {
-  const router = require('express').Router();
-  const application = app;
-  
-  /* GET users listing. */
-  router.get('/', function(req, res, next) {
-    res.send('respond with a resource');
-  });
+const router = require('express').Router();
 
-return router;
-}
+/* GET users listing. */
+router.get('/', function(req, res, next) {
+  res.send('respond with a resource');
+});
+
+module.exports = router;

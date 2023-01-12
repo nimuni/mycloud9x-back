@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const hpp = require('hpp')
+const fileUpload = require("express-fileupload");
 
 // dotenv
 require("dotenv").config();
@@ -28,15 +29,16 @@ app.use(fileUpload(
 		debug: true
 	}
 ));
-app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
+// app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
+app.use(cors())
 app.use(hpp());
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-const apiRouter = requires('./routes/api')
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const apiRouter = require('./routes/api')
 
-app.use('/', indexRouter)(app);
-app.use('/users', usersRouter)(app);
-app.use('/api', apiRouter)(app)
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+app.use('/api', apiRouter)
 
 module.exports = app;
