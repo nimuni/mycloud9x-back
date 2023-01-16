@@ -36,11 +36,9 @@ app.use(cors())
 app.use(hpp());
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
 const apiRouter = require('./routes/api')
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/api', apiRouter)
 
 module.exports = app;
