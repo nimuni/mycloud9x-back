@@ -5,6 +5,8 @@ const logger = require('morgan');
 const cors = require('cors');
 const hpp = require('hpp')
 const fileUpload = require("express-fileupload");
+const session = require('express-session');
+
 const db = require('./db/db.js'); // db 불러오기
 db();
 
@@ -16,6 +18,13 @@ var app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
+app.use(session({
+	secret:process.env.SESSION_SECRET,
+	resave: false,
+	saveUninitialized: false
+}))
+
+
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
