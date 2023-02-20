@@ -1,14 +1,15 @@
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+const morgan = require('morgan');
 const cors = require('cors');
 const hpp = require('hpp')
 const fileUpload = require("express-fileupload");
 const session = require('express-session');
+const passport = require('passport');
+const passportConfig = require('./middleware/passport');
+const db = require('./db/db.js');
 
-const db = require('./db/db.js'); // db 불러오기
-db();
 
 // dotenv
 require("dotenv").config();
@@ -16,13 +17,19 @@ console.log(process.env.WEB_TITLE)
 
 var app = express();
 
-app.use(logger('dev'));
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(session({
 	secret:process.env.SESSION_SECRET,
-	resave: false,
+	resave: true,
 	saveUninitialized: false
 }))
+app.use(passport.initialize()); // passport 구동
+app.use(passport.session()); // 세션 연결
+
+// 구동
+db();
+passportConfig();
 
 
 app.use(express.urlencoded({ extended: false }));

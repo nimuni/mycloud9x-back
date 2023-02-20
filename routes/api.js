@@ -10,9 +10,9 @@ router.post('/upload', function(req, res) {
 });
 
 
-// Users api 설정
-const usersRouter = require('./users');
-router.use('/users', usersRouter);
+// User api 설정
+const userRouter = require('./user');
+router.use('/user', userRouter);
 
 
 module.exports = router;

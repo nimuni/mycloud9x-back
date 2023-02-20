@@ -1,8 +1,9 @@
+require("dotenv").config();
 const router = require('express').Router();
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
-const GOOGLE_CLIENT_ID = "459712396046-gi31ntf2jes64og7j45i3rnsvgdt9roc.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET = "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";
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const fs = require("fs");
 const path = require('path')
 router.use(passport.initialize());
@@ -32,7 +33,7 @@ passport.use(
 		{
 			clientID: GOOGLE_CLIENT_ID,
 			clientSecret: GOOGLE_CLIENT_SECRET,
-			callbackURL: "http://localhost/auth/google/callback",
+			callbackURL: `http://localhost:${process.env.PORT}/auth/google/callback`,
 			passReqToCallback: true,
 		},
 		function (request, accessToken, refreshToken, profile, done) {
@@ -83,7 +84,7 @@ router.get(
 );
 // logout
 router.get("/logout", (req, res) => {
-  req.logout();
+  // req.logout();
   res.redirect("/login");
 });
 
