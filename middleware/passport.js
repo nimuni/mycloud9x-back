@@ -12,7 +12,7 @@ module.exports = () => {
   passport.deserializeUser((user, done) => { // 매개변수 user는 serializeUser의 done의 인자 user를 받은 것
     // serializeUser에서 넘긴 user, 즉 Google id가 읽힘
     console.log("call deserializeUser") 
-    console.log(id)
+    console.log(user.id)
     done(null, user); // 여기의 user가 req.user가 됨
   });
 
