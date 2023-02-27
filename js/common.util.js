@@ -1,9 +1,11 @@
 exports.isEmpty = function(value){
-  console.log("isEmpty")
-  console.log(value)
+  console.log("call isEmpty")
+  console.log(`type=${typeof value} value=${value}`)
   if ( value === "" || value === null || value === undefined){
+    console.log(true)
     return true
   } else {
+    console.log(false)
     return false
   }
 };
