@@ -1,18 +1,24 @@
-exports.isEmpty = function(value){
-  console.log("call isEmpty")
-  console.log(`type=${typeof value} value=${value}`)
+exports.isEmpty = (value) =>{
   if ( value === "" || value === null || value === undefined){
-    console.log(true)
     return true
   } else {
-    console.log(false)
     return false
   }
 };
-exports.isEmptyObj = function(obj) {
+exports.isEmptyObj = (obj) => {
   if ( value != null && typeof value == "object" && !Object.keys(value).length){
     return true
   } else {
     return false
   }
+}
+exports.generateRandomString = (num) => {
+  const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  let result = '';
+  const charactersLength = characters.length;
+  for (let i = 0; i < num; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
 }

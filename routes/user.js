@@ -64,16 +64,29 @@ router.put('/allow', async (req, res, next) => {
   res.send('call /api/user/allow. 현재 미구현');
 });
 router.post('/findId', async (req, res, next) => {
-  // DB에서 변경처리
-  // post로 들어오는 param 값 중 email 값을 읽어서 
-  // 해당 email로 아이디 전송 혹은 아이디 리턴
-  res.send('call /api/user/findId. 현재 미구현');
+  try {
+    let user = await userService.findAccount("id", req.body);
+    if(user){
+      res.status(201).send(user);
+    } else {
+      res.status(204).send();
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
 });
 router.post('/findPwd', async (req, res, next) => {
-  // DB에서 변경처리
-  // post로 들어오는 param 값 ID와 email 값을 비교 후 맞으면 
-  // 해당 email로 임시 비밀번호 전송
-  res.send('call /api/user/findPwd. 현재 미구현');
+  console.log("call /findPwd")
+  try {
+    let user = await userService.findAccount("pwd", req.body);
+    if(user){
+      res.status(201).send(user);
+    } else {
+      res.status(204).send();
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
 });
 router.get('/duplicateIdCheck/:id', async (req, res, next) => {
   // DB에서 변경처리
