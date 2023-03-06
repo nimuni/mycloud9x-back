@@ -1,5 +1,6 @@
 require("dotenv").config();
 const nodemailer = require('nodemailer');
+const { verifyEmail } = require("../userService");
 const transporter = nodemailer.createTransport({
   // 사용하고자 하는 서비스, gmail계정으로 전송할 예정이기에 'gmail'
   service: process.env.MAIL_SERVICE,
@@ -33,12 +34,26 @@ exports.getContents = async (type, data) => {
   <br>
   <p style='color:red; font-size:8pt;'>본 메일은 발신전용입니다.</p>
 </div>`
+  const verifyEmail = `
+<div style='border:1px solid #c8c8c8; padding:5px;'>
+  <p style='color:black'>mycloud9x 서비스의 이메일 인증을 위한 메일입니다..</p>
+  <p style='color:black'>아래 버튼을 눌러서 인증을 완료해주세요.</p>
+  <a  href="${process.env.URI_ORIGIN}:${process.env.PORT}/api/user/verifyCode/${data.verifyCode}" 
+      onclick="window.open(this.href, '_blank'); return false;">
+    인증하기
+  </a>
+  <br>
+  <p style='color:red; font-size:8pt;'>본 메일은 발신전용입니다.</p>
+</div>  
+  `
 
   switch (type) {
     case "id":
-      return findIdDiv
+      return findIdDiv;
     case "pwd":
-      return findPwdDiv
+      return findPwdDiv;
+    case "verifyEmail":
+      return verifyEmail;
     default:
       return ``
   }

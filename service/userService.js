@@ -2,6 +2,7 @@ const userImpl = require("./impl/userServiceImpl");
 const { encrypt, decrypt } = require("../js/crypto");
 const { isEmpty, generateRandomString } = require("../js/common.util");
 const mailImpl = require("./impl/mailServiceImpl")
+const verifyCodeImpl = require("./impl/VerifyCodeServiceImpl")
 
 const projectionUserObj = {
   provider: 1,
@@ -16,17 +17,22 @@ exports.register = async (reqBody) => {
   // id: ‘사용자입력아이디’ // ‘104226972280412090842’
   // password: ‘’ // ownAPI인 경우에만 사용
   // email: ‘사용자입력이메일’
-  // email_verified: true / false
+  // email_verified: false
+  // 전송된 email에서 확인버튼 누르면 최종가입완료.
   try {
     let newUserObj = {
       provider: reqBody.provider,
       id: reqBody.id,
       email: reqBody.email,
-      email_verified: reqBody.email_verified
+      email_verified: false
     };
     if(reqBody?.password) newUserObj.password = encrypt(reqBody.password);
 
     const user = await userImpl.insertOne(newUserObj)
+
+    // 인증용 이메일 보내기
+    await this.verifyEmail({email:user.email});
+
     return user;
   } catch (error) {
     throw error
@@ -143,5 +149,52 @@ exports.findAccount = async (type, reqBody) => {
     console.log("error in findAccount")
     console.log(error)
     throw error
+  }
+}
+exports.verifyEmail = async (userObj) => {
+  try {
+    // 인증번호 랜덤 생성 및 DB에 저장
+    const verifyCode = generateRandomString(16);
+    let limitDate = new Date();
+    limitDate.setDate(limitDate.getDate()+1);
+    const filter = {
+      email: userObj.email
+    }
+    const update = {
+      verify_code: verifyCode,
+      verified: false,
+      limit: limitDate
+    }
+    // 인증번호 입력 특정시간동안 안하면 재 요청/생성 하게 upsert콜.
+    // 가입 시 정보가 있으면 다시 verifyEmail 호출하게.
+    await verifyCodeImpl.upsertOne(filter, update)
+
+    // 이메일전송
+    // 이메일에 해당 인증번호의 url 연결버튼 설정
+    let subject="mycloud9x 이메일 인증을 완료해주세요.";
+    let html = await mailImpl.getContents("verifyEmail", {verifyCode:verifyCode});
+    await mailImpl.sendMail(userObj.email, {subject, html})
+  } catch (error) {
+    throw error
+  }
+}
+exports.verifyCode = async (code) => {
+  try {
+    const foundData = await verifyCodeImpl.findOneAndUpdate({verifyCode: code}, {verified: true})
+    if(foundData){
+      const findObj = {
+        email: foundData.email
+      }
+      const changeObj = {
+        email_verified: true
+      }
+      const changedUser = await userImpl.findOneAndUpdate(findObj, changeObj, projectionUserObj)
+      return changedUser;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log("error verifyCode")
+    console.log(error)
   }
 }

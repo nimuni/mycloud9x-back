@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+// TODO.
+// 사용정지 관련된 사항 추가
+// 
 const userSchema = new Schema({
   provider: {
     type: String,
