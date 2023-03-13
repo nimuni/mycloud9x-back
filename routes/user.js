@@ -1,6 +1,7 @@
 require("dotenv").config();
 const router = require('express').Router();
 const userService = require('../service/userService')
+const { isEmptyObj } = require("../js/common.util");
 
 /* GET user listing. */
 router.get('/', async (req, res, next) => {
@@ -31,8 +32,9 @@ router.post('/', async (req, res, next) => {
   try {
     let user = await userService.register(req.body);
     if(user){
-      res.status(201).send(user);
+      res.status(201).send();
     } else {
+      // 가입실패.
       res.status(204).send();
     }
   } catch (error) {
@@ -51,6 +53,69 @@ router.put('/:id', async (req, res, next) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+router.post('/findId', async (req, res, next) => {
+  try {
+    await userService.findAccount("id", req.body);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+router.post('/findPwd', async (req, res, next) => {
+  try {
+    await userService.findAccount("pwd", req.body);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+router.get('/verifyCode/:code', async (req, res, next) => {
+  try {
+    let isVerified = await userService.verifyCode({code:req.params.code});
+    if(isVerified){
+      res.status(200).send(true)
+      // TODO. url로 리다이렉션.
+      // const url = ""
+      // res.redirect(url)
+    } else {
+      res.status(200).send(false)
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+router.get('/duplicateIdCheck/:id', async (req, res, next) => {
+  try {
+    let user = await userService.findOne({id:req.params.id});
+    if(isEmptyObj(user)){
+      res.status(200).send(false);
+    } else {
+      res.status(200).send(true);
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+router.get('/duplicateEmailCheck/:email', async (req, res, next) => {
+  try {
+    let user = await userService.findOne({email:req.params.email});
+    if(isEmptyObj(user)){
+      res.status(200).send(false);
+    } else {
+      res.status(200).send(true);
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
 router.delete('/:id', async (req, res, next) => {
   // DB에서 변경처리
   console.log("call delete /api/user");
@@ -62,28 +127,6 @@ router.put('/allow', async (req, res, next) => {
   // 승인 혹은 승인취소 시 폴더가 생성되어있는지 확인 후 폴더 생성.
   // 폴더가 존재하는 경우 아무 동작을 취하지 않음.
   res.send('call /api/user/allow. 현재 미구현');
-});
-router.post('/findId', async (req, res, next) => {
-  // DB에서 변경처리
-  // post로 들어오는 param 값 중 email 값을 읽어서 
-  // 해당 email로 아이디 전송 혹은 아이디 리턴
-  res.send('call /api/user/findId. 현재 미구현');
-});
-router.post('/findPwd', async (req, res, next) => {
-  // DB에서 변경처리
-  // post로 들어오는 param 값 ID와 email 값을 비교 후 맞으면 
-  // 해당 email로 임시 비밀번호 전송
-  res.send('call /api/user/findPwd. 현재 미구현');
-});
-router.get('/duplicateIdCheck/:id', async (req, res, next) => {
-  // DB에서 변경처리
-  // param으로 들어온 id값을 통해서 비교 후 res.send로 true/false 리턴
-  res.send('call /api/user/duplicateIdCheck/:id. 현재 미구현');
-});
-router.get('/duplicateEmailCheck/:email', async (req, res, next) => {
-  // DB에서 변경처리
-  // param으로 들어온 id값을 통해서 비교 후 res.send로 true/false 리턴
-  res.send('call /api/user/duplicateEmailCheck/:email. 현재 미구현');
 });
 
 module.exports = router;
