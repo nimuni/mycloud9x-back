@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require("../../js/crypto")
 const { Schema } = mongoose;
 
 // TODO.
@@ -28,7 +29,7 @@ const userSchema = new Schema({
 });
 
 userSchema.methods.comparePassword = function(inputPassword, callback) {
-  if (inputPassword === this.password) {
+  if (inputPassword === crypto.decrypt(this.password)) {
     callback(null, true);
   } else {
     callback('error');

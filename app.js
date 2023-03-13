@@ -1,3 +1,7 @@
+// dotenv
+require("dotenv").config();
+
+// express
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -7,17 +11,14 @@ const hpp = require('hpp')
 const fileUpload = require("express-fileupload");
 const session = require('express-session');
 const passport = require('passport');
-const passportConfig = require('./middleware/passport');
+const passportConfig = require('./js/passport');
 const db = require('./db/db.js');
 
-
-// dotenv
-require("dotenv").config();
 console.log(process.env.WEB_TITLE)
 
 var app = express();
 
-app.use(morgan('dev'));
+app.use(morgan(process.env.LOG_FORMAT));
 app.use(express.json());
 app.use(session({
 	secret:process.env.SESSION_SECRET,
@@ -51,10 +52,8 @@ app.use(fileUpload(
 app.use(cors())
 app.use(hpp());
 
-const indexRouter = require('./routes/index');
 const apiRouter = require('./routes/api')
 
-app.use('/', indexRouter);
 app.use('/api', apiRouter)
 
 module.exports = app;
