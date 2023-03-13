@@ -39,7 +39,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload(
 	{
 		limits: {
-			fileSize: 1024*1024*100 // 100 MiB
+			fileSize: 10*1024*1024*1024 // 1 GiB
 		},
 		abortOnLimit: true,
 		createParentPath: true,
