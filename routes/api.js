@@ -89,7 +89,7 @@ router.get('/auth/google/callback',
 const userRouter = require('./user');
 router.use('/user', userRouter);
 
-
-
+const fileRouter = require('./file')
+router.use('/file', fileRouter);
 
 module.exports = router;

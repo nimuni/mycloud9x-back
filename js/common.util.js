@@ -40,3 +40,16 @@ exports.generateRandomString = (num) => {
 
   return result;
 }
+
+
+///////////////////////////
+// file util
+///////////////////////////
+exports.fileNameFilter = (fileName) => {
+  const ILLEGAL_EXP = /[\{\}\/?,;:|*~`!^\+<>@\#$%&\\\=\'\"]/gi;
+  if(fileName.test(ILLEGAL_EXP)){
+    return fileName.replace(ILLEGAL_EXP, "");
+  } else {
+    return fileName
+  }
+}

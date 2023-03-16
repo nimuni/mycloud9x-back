@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const fileService = require('../service/fileService');
 
 ////////////////////////////// 
 // 폴더 처리
@@ -9,6 +10,7 @@ router.get('/folder/:userFilePath', function(req, res, next) {
   res.send('respond with a resource3');
 });
 router.post('/folder', function(req, res, next) {
+  fileService.initUserFolder()
   // 해당 폴더경로 및 폴더명으로 폴더 생성
   // data값으로 path를 전송해줘야함.
   res.send('respond with a resource3');
