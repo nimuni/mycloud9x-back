@@ -1,4 +1,3 @@
-require("dotenv").config();
 const router = require('express').Router();
 const userService = require('../service/userService')
 const { isEmptyObj } = require("../js/common.util");

@@ -36,7 +36,12 @@ module.exports = () => {
       if(!user.email_verified) return done(null, false, { message: '이메일 인증이 진행되지 않았습니다.' });
       user.comparePassword(password, (passError, isMatch) => {
         if (isMatch) {
-          return done(null, {id: user.id, provider: user.provider});
+          return done(null, {
+            provider: user.provider,
+            id: user.id,
+            email: user.email,
+            email_verified: user.email_verified
+          });
         }
         return done(null, false, { message: '비밀번호가 틀렸습니다' });
       });
@@ -64,10 +69,11 @@ module.exports = () => {
         // 이미가입된경우, provider가 google이면 
         if(exUser.provider=="google"){
           // 로그인시킨다
+          delete exUser.password;
           done(null, exUser)
         } else {
           // 에러를 뱉는다. 다른 계정으로 가입된 경우임.
-          done(new Error("에러메시지"))
+          done(new Error("이미 Google이 아닌 다른 방식으로 가입된 계정입니다."))
         }
       } else {
         console.log("exuser없음.")
@@ -79,7 +85,12 @@ module.exports = () => {
           email: profile.emails[0].value,
           email_verified: profile.emails[0].verified
         })
-        done(null, newUser);
+        done(null, {
+          provider: newUser.provider,
+          id: newUser.id,
+          email: newUser.email,
+          email_verified: newUser.email_verified,
+        });
       }
     } catch (error) {
       done(error)

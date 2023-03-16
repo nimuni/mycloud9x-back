@@ -53,22 +53,27 @@ router.post("/login", async (req, res, next) => {
     res.status(401).json({ message: 'check user id and password again' });
   }
 })
-router.post('/logout', verifyJwt, (req, res) => {
+// router.post('/logout', verifyJwt, (req, res) => {
+//   res.clearCookie('refreshToken');
+//   res.sendStatus(204);
+// });
+router.get('/logout', verifyJwt, (req, res) => {
   res.clearCookie('refreshToken');
-  res.sendStatus(204);
+  res.redirect('/login');
 });
 
 // 구글 로그인 요청을 처리하는 라우터. 
-// Front-end에서 http://nimuni.ml:8080/api/login/google 로 리다이렉트 시키면 됨.
 router.get('/login/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// 회원가입 요청을 처리하는 라우터. 본질적으로 같은 콜백으로 보낸다.
+router.get('/register/google', passport.authenticate('google', { scope: ['profile', 'email']}));
 
 // 구글 로그인 콜백 요청을 처리하는 라우터
-router.get('/login/google/callback', 
+router.get('/auth/google/callback', 
   passport.authenticate('google', { session: false, failureRedirect: "/login" }), (req, res) => {
   // 콜백된 이후 passport의 인증과정을 먼저 거치면서
   // 마지막에 리턴된 done(null, profile); 을 통해서 값을 가져옴
   const user = req.user;
-  console.log("after /login/google/callback")
+  console.log("after /auth/google/callback")
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 

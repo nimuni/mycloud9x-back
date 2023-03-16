@@ -30,6 +30,7 @@ exports.register = async (reqBody) => {
       id: reqBody.id,
       email: reqBody.email,
       email_verified: reqBody.email_verified,
+      nickname: reqBody.id
     };
     if(reqBody.provider == "ownAPI") {
       newUserObj.email_verified = false;
@@ -119,7 +120,9 @@ exports.login = async (idAndPwdObj) => {
     if(decrypt(user.password) == idAndPwdObj?.password){
       return {
         id: user.id,
-        provider: user.provider
+        provider: user.provider,
+        email: user.email,
+        email_verified: user.email_verified,
       };
     } else {
       // TODO. 일정 횟수 이상 로그인 실패하면 로그인 금지시키기.

@@ -56,18 +56,25 @@ exports.verifyJwt = (req, res, next) => {
 
       // refresh token 검증
       try {
-        const decodedRefreshToken = this.refreshTokenVerify(refreshToken);
+        const decodedInfo = this.refreshTokenVerify(refreshToken);
+        const userInfo = {
+          provider: decodedInfo.provider,
+          id: decodedInfo.id,
+          email: decodedInfo.email,
+          email_verified: decodedInfo.email_verified,
+        }
 
         // refresh token으로 새로운 access token과 refresh token 발행
-        const newAccessToken = this.generateAccessToken({id: decodedRefreshToken.id, provider: decodedRefreshToken.provider})
-        const newRefreshToken = this.generateRefreshToken({id: decodedRefreshToken.id, provider: decodedRefreshToken.provider})
+        const newAccessToken = this.generateAccessToken(userInfo)
+        const newRefreshToken = this.generateRefreshToken(userInfo)
 
         // 새로 발행된 토큰 쿠키에 저장
         res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict'/* https 사용하는 경우. secure:true */})
 
         req.user = this.accessTokenVerify(newAccessToken);
       } catch (error) {
-        return res.status(401).json({ message: 'Invalid refresh token' });
+        // return res.status(401).json({ message: 'Invalid refresh token' });
+        return res.redirect(`/login`)
       }
     } else {
       return res.status(401).json({ message: 'Invalid access token' });
