@@ -2,11 +2,13 @@ const jwt = require('jsonwebtoken');
 
 exports.generateAccessToken = (user) => {
   // jwt.sign(payload, secretKey, options)
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+  // return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+  return jwt.sign({data:user}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
 }
 exports.generateRefreshToken = (user) => {
   // jwt.sign(payload, secretKey, options)
-  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+  // return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+  return jwt.sign({data:user}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 }
 exports.accessTokenVerify = (token) => {
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
@@ -14,7 +16,6 @@ exports.accessTokenVerify = (token) => {
       console.error(err);
       return false;
     }
-    console.log(decoded);
     return decoded
   });
 }
@@ -24,7 +25,6 @@ exports.refreshTokenVerify = (token) => {
       console.error(err);
       return false;
     }
-    console.log(decoded);
     return decoded
   });
 }
@@ -33,34 +33,39 @@ exports.refreshTokenVerify = (token) => {
 exports.verifyJwt = (req, res, next) => {
   // 0: 헤더 1:payload-저장한정보 2:verify signature
   // 처리가 안되면 세션만료인 것으로 판별.
-  const accessToken = req.headers.authorization?.split(' ')[1];
+  const authHeader = req.headers['authorization'];
+  const accessToken = authHeader && authHeader.split(' ')[1];
+
   if (!accessToken) {
     return res.status(401).json({ message: 'Access token is required' });
   }
 
   try {
-    const decodedAccessToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    // access 토큰 인증완료.
+    const decodedAccessToken = this.accessTokenVerify(accessToken);
     req.user = decodedAccessToken;
+    next();
   } catch (error) {
     // access token이 만료된 경우
     if (error.name === 'TokenExpiredError') {
       const refreshToken = req.cookies.refreshToken;
+      
       if (!refreshToken) {
         return res.status(401).json({ message: 'Refresh token is required' });
       }
 
       // refresh token 검증
       try {
-        const decodedRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const decodedRefreshToken = this.refreshTokenVerify(refreshToken);
 
         // refresh token으로 새로운 access token과 refresh token 발행
         const newAccessToken = this.generateAccessToken({id: decodedRefreshToken.id, provider: decodedRefreshToken.provider})
         const newRefreshToken = this.generateRefreshToken({id: decodedRefreshToken.id, provider: decodedRefreshToken.provider})
 
         // 새로 발행된 토큰 쿠키에 저장
-        res.cookie('refreshToken', newRefreshToken, { httpOnly: true });
+        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict'/* https 사용하는 경우. secure:true */})
 
-        req.user = jwt.verify(newAccessToken, process.env.ACCESS_TOKEN_SECRET);
+        req.user = this.accessTokenVerify(newAccessToken);
       } catch (error) {
         return res.status(401).json({ message: 'Invalid refresh token' });
       }
@@ -68,6 +73,5 @@ exports.verifyJwt = (req, res, next) => {
       return res.status(401).json({ message: 'Invalid access token' });
     }
   }
-
   next();
 }

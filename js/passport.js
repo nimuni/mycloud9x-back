@@ -1,6 +1,7 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const userService = require("../service/userService")
 const userServiceImpl = require("../service/impl/userServiceImpl")
 
 module.exports = () => {
@@ -50,27 +51,38 @@ module.exports = () => {
     callbackURL: process.env.GOOGLE_CALLBACK_URL
   },
   async (accessToken, refreshToken, profile, done) => {
-    // 구글로그인 이후 반환되는 인자값들
-    console.log("call GoogleStrategy")
-    console.log(accessToken)
-    console.log(profile)
-
-    // accessToken, refreshToken 처리 및 에러 반환
-
-    // profile 반환(필요한경우)
-
-
-    // 이곳에서 실제 로그인 인증을 처리합니다.
-    // 인증이 성공하면 done(null, user)를 호출합니다.
-    // 인증이 실패하면 done(null, false)를 호출합니다.
-    // const user = await userServiceImpl.findOne({}, projectionUserObj)
-
-    // example
-    // profile에서 로그인한 사용자의 정보를 가져옵니다.
-    // const user = {
-    //   email: profile.emails[0].value,
-    //   name: profile.displayName
-    // };
-    done(null, profile);
+    try {
+      const projectionUserObj = {
+        id: 1,
+        provider: 1,
+        password: 1,
+        email: 1,
+        email_verified: 1
+      }
+      let exUser = await userServiceImpl.findOne({id:profile.id}, projectionUserObj)
+      if(exUser){
+        // 이미가입된경우, provider가 google이면 
+        if(exUser.provider=="google"){
+          // 로그인시킨다
+          done(null, exUser)
+        } else {
+          // 에러를 뱉는다. 다른 계정으로 가입된 경우임.
+          done(new Error("에러메시지"))
+        }
+      } else {
+        console.log("exuser없음.")
+        console.log(profile)
+        // 회원가입시키고 로그인시킨다.
+        let newUser = await userService.register({
+          provider: "google",
+          id: profile.id,
+          email: profile.emails[0].value,
+          email_verified: profile.emails[0].verified
+        })
+        done(null, newUser);
+      }
+    } catch (error) {
+      done(error)
+    }
   }))
 };

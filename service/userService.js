@@ -20,20 +20,31 @@ exports.register = async (reqBody) => {
   // email_verified: false
   // 전송된 email에서 확인버튼 누르면 최종가입완료.
   try {
+    if(reqBody.provider != "ownAPI" 
+        && reqBody.provider != "google" 
+        && reqBody.provider != "kakao") {
+      throw new Error("provider 형식이 잘못되었음.")
+    }
     let newUserObj = {
       provider: reqBody.provider,
       id: reqBody.id,
       email: reqBody.email,
-      email_verified: false
+      email_verified: reqBody.email_verified,
     };
-    if(reqBody?.password) newUserObj.password = encrypt(reqBody.password);
+    if(reqBody.provider == "ownAPI") {
+      newUserObj.email_verified = false;
+      if(reqBody?.password) newUserObj.password = encrypt(reqBody.password);
 
-    const user = await userImpl.insertOne(newUserObj)
+      const user = await userImpl.insertOne(newUserObj)
+      
+      // 인증용 이메일 보내기
+      await this.verifyEmail({email:user.email});
 
-    // 인증용 이메일 보내기
-    await this.verifyEmail({email:user.email});
-
-    return user;
+      return user;
+    } else {
+      const user = await userImpl.insertOne(newUserObj)
+      return user;
+    }
   } catch (error) {
     throw error
   }
@@ -89,6 +100,24 @@ exports.update = async (findObj, reqBody) => {
 
     const changedUser = await userImpl.findOneAndUpdate(findObj, changeObj, projectionUserObj)
     return changedUser;
+  } catch (error) {
+    throw error
+  }
+}
+
+exports.login = async (idAndPwdObj) => {
+  try {
+    const user = await userImpl.findOne({ id: idAndPwdObj?.id })
+    if(decrypt(user.password) == idAndPwdObj?.password){
+      return {
+        id: user.id,
+        provider: user.provider
+      };
+    } else {
+      // TODO. 일정 횟수 이상 로그인 실패하면 로그인 금지시키기.
+      // user 스키마에 로그인 실패횟수 및 로그인 금지시간 설정
+      return false;
+    }
   } catch (error) {
     throw error
   }

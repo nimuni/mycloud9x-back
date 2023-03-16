@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 require("dotenv").config();
+mongoose.set('strictQuery', false);
 
 const connect = () => {
   // 몽구스와 몽고디비 연결하는 부분
