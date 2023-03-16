@@ -1,10 +1,11 @@
 const router = require('express').Router();
 const fileService = require('../service/fileService');
+const folderService = require('../service/folderService');
 
 ////////////////////////////// 
 // 폴더 처리
 //////////////////////////////
-router.get('/folder/:userFilePath', function(req, res, next) {
+router.get('/folder/:folderId', function(req, res, next) {
   // 해당 폴더경로의 폴더 내용을 리턴
   // userFilePath 는 유저의 상대 하위 폴더 경로 및 파일명, 확장자명까지 포함
   res.send('respond with a resource3');
@@ -30,7 +31,7 @@ router.delete('/folder', function(req, res, next) {
 ////////////////////////////// 
 // 파일처리
 //////////////////////////////
-router.get('/file/:userFilePath', function(req, res, next) {
+router.get('/file/:fileId', function(req, res, next) {
   // 해당 경로의 파일 정보를 리턴
   // userFilePath 는 유저의 상대 하위 폴더 경로 및 파일명, 확장자명까지 포함
   // ex) http://localhost/myFolder1/abcd.png
@@ -44,7 +45,7 @@ router.post('/uploadFile', function(req, res, next) {
   // 업로드 다운로드시 유저 로그인 체크하고 확인되면 진행.
   res.send('respond with a resource3');
 });
-router.get('/downloadFile/:userFilePath', function(req, res, next) {
+router.get('/downloadFile/:fileId', function(req, res, next) {
   // 인자값으로 경로 및 파일명을 받아서
   // ex) userFilePath: "/myFolder1/abcd.png", file: Blob(~~~~~);
   // 해당 경로에 파일 생성 및 업로드. 경로에 폴더가 없으면 폴더 같이 생성.
@@ -74,17 +75,17 @@ router.post('/shareFile', function(req, res, next) {
   // 임시경로 생성 시 존재여부 확인 이후 진행
   res.send('respond with a resource3');
 });
-router.get('/shareFile/:tempPath', function(req, res, next) {
+router.get('/shareFile/:fileId', function(req, res, next) {
   // 인자값으로 생성된 문자열을 통해서 임시파일 다운로드
   // DB에 문자열을 읽어와서 해당 경로의 파일 전송
   res.send('respond with a resource3');
 });
-router.put('/shareFile/:tempPath', function(req, res, next) {
+router.put('/shareFile/:fileId', function(req, res, next) {
   // 인자값으로 생성된 문자열을 통해서 임시파일 기간 수정
   // jwt 등 로그인된 정보를 기반하여 수정여부 결정
   res.send('respond with a resource3');
 });
-router.delete('/shareFile/:tempPath', function(req, res, next) {
+router.delete('/shareFile/:fileId', function(req, res, next) {
   // 인자값으로 생성된 문자열을 통해서 임시파일 공유 취소
   // 실제 파일 및 임시경로는 삭제하지 않으나, 사용할 수 없게 사용여부 N으로 설정
   res.send('respond with a resource3');
