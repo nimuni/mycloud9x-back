@@ -16,11 +16,12 @@ const util = require('../js/common.util');
 //     throw error
 //   }
 // }
-exports.mkdir = async (folderName, parentFolderId) => {
+exports.mkdir = async (folderName, parentFolderId, userId) => {
   try {
     const folderObj = {
       name: folderName,
-      parentFolderId: parentFolderId
+      parentFolderId: parentFolderId,
+      owner: userId
     }
     return await folderImpl.insertOne(folderObj);
   } catch (error) {

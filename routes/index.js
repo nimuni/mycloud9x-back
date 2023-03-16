@@ -32,7 +32,7 @@ passport.use(
 		{
 			clientID: GOOGLE_CLIENT_ID,
 			clientSecret: GOOGLE_CLIENT_SECRET,
-			callbackURL: `http://localhost:${process.env.PORT}/auth/google/callback`,
+			callbackURL: `http://nimuni.ml:${process.env.PORT}/auth/google/callback`,
 			passReqToCallback: true,
 		},
 		function (request, accessToken, refreshToken, profile, done) {

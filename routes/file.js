@@ -16,12 +16,12 @@ router.post('/folder', function(req, res, next) {
   // data값으로 path를 전송해줘야함.
   res.send('respond with a resource3');
 });
-router.put('/folder', function(req, res, next) {
+router.put('/folder/:id', function(req, res, next) {
   // 전송된 폴더경로 및 폴더명으로 폴더변경. 경로,이름변경. 
   // 이동시 하위파일까지 같이 이동
   res.send('respond with a resource4');
 });
-router.delete('/folder', function(req, res, next) {
+router.delete('/folder/:id', function(req, res, next) {
   // 전송된 폴더경로 및 폴더명으로 폴더 삭제.
   // 삭제시 하위파일 존재하면 하위파일까지 전부 날려야함.
   res.send('respond with a resource5');
