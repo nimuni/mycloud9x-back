@@ -88,6 +88,14 @@ exports.findOne = async (reqBody) => {
     throw error
   }
 }
+exports.checkPassword = async (findObj, reqBody) => {
+  try {
+    const user = await userImpl.findOne(findObj, {id:1, password:1});
+    return reqBody.password == decrypt(user.password);
+  } catch (error) {
+    throw error
+  }
+}
 
 exports.update = async (findObj, reqBody) => {
   try {
