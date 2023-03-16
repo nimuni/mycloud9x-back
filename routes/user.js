@@ -3,7 +3,7 @@ const router = require('express').Router();
 const userService = require('../service/userService')
 const { isEmptyObj } = require("../js/common.util");
 const passport = require('passport');
-const { generateAccessToken, generateRefreshToken, verifyJwt } = require("../js/jwt");
+const { verifyJwt } = require("../js/jwt");
 
 /* GET user listing. */
 router.get('/', async (req, res, next) => {
@@ -43,7 +43,7 @@ router.post('/', async (req, res, next) => {
     res.status(500).send("Internal Server Error");
   }
 });
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', verifyJwt, async (req, res, next) => {
   try {
     let user = await userService.update({id:req.params.id}, req.body);
     if(user){
@@ -55,7 +55,18 @@ router.put('/:id', async (req, res, next) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
+router.post('/checkPassword/:id', async (req, res, next) => {
+  try {
+    const result = await userService.checkPassword({id:req.params.id}, req.body);
+    if(result){
+      res.status(200).send({result:result, message:"password 일치"});
+    } else {
+      res.status(200).send({result:result, message:"password 불일치"});
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
 router.post('/findId', async (req, res, next) => {
   try {
     await userService.findAccount("id", req.body);
