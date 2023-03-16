@@ -22,7 +22,13 @@ const userSchema = new Schema({
   email_verified: {
     type: Boolean,
     required: true,
-  }
+  },
+  nickname: String,
+  loginFailCount: {
+    type:Number,
+    default: 0
+  },
+  loginDenyDate: Date
 },
 {
   timestamps: true,

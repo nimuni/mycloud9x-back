@@ -1,4 +1,3 @@
-require("dotenv").config();
 const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   // 사용하고자 하는 서비스, gmail계정으로 전송할 예정이기에 'gmail'
