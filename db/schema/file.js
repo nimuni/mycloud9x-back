@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const crypto = require("../../js/crypto")
+const sharedWithSchema = require('./sharedWith')
 const { Schema } = mongoose;
 
 const fileSchema = new Schema({
@@ -20,9 +20,11 @@ const fileSchema = new Schema({
     required: true
   },
   owner: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'User',
     required: true
-  }
+  },
+  sharedWith: [sharedWithSchema]
 },
 {
   timestamps: true,

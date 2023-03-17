@@ -17,3 +17,6 @@ exports.findOneAndUpdate = async (findObj, changeObj) => {
 exports.findOneAndDelete = async (findObj) => {
   return await File.findOneAndDelete(findObj);
 }
+exports.deleteMany = async (findObj) => {
+  return await File.deleteMany(findObj);
+}
