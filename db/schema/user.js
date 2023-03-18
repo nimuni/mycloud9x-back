@@ -25,7 +25,7 @@ const userSchema = new Schema({
   },
   nickname: String,
   loginFailCount: {
-    type:Number,
+    type: Number,
     default: 0
   },
   loginDenyDate: Date

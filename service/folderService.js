@@ -3,6 +3,7 @@ const fileImpl = require('./impl/fileServiceImpl');
 const util = require('../js/common.util');
 
 // 현재 경로 가져오기. 상위폴더들까지.
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/graphLookup/#mongodb-pipeline-pipe.-graphLookup
 // exports.getRelativePath = async (folderId) => {
 //   try {
 //     const currentFolder = await folderImpl.findOne({_id:folderId});
@@ -46,15 +47,14 @@ exports.readDir = async (folderId) => {
   }
 }
 exports.mvdir = async (folderId, parentFolderId) => {
-  // TODO. 한번에 여러개의 dir를 모두 옮길 수 있게 해야함.
   try {
-    const findFolferObj = {
+    const findFolderObj = {
       _id: folderId
     }
     const changeFolderObj = {
       parentFolderId: parentFolderId
     }
-    const folder = await folderImpl.findOneAndUpdate(findFolferObj, changeFolderObj)
+    const folder = await folderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
     return folder;
   } catch (error) {
     console.log(error)
@@ -63,13 +63,13 @@ exports.mvdir = async (folderId, parentFolderId) => {
 }
 exports.renameDir = async (folderId, newName) => {
   try {
-    const findFolferObj = {
+    const findFolderObj = {
       _id: folderId
     }
     const changeFolderObj = {
       name: util.fileNameFilter(newName)
     }
-    const folder = await folderImpl.findOneAndUpdate(findFolferObj, changeFolderObj)
+    const folder = await folderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
     return folder;
   } catch (error) {
     console.log(error)
@@ -77,16 +77,68 @@ exports.renameDir = async (folderId, newName) => {
   }
 }
 exports.removeDir = async (folderId) => {
-  // TODO. 한번에 여러개의 dir를 모두 옮길 수 있게 해야함.
-  // 하위 파일들을 다 삭제해야함.
+  // TODO. 한번에 여러개의 dir를 모두 삭제할 수 있게 해야함.
+  // 현재는 하부에 dir이 없는 경우에만 파일 포함해서 모두 삭제.
   try {
-    const findFolferObj = {
+    const findFolderObj = {
       _id: folderId
     }
-    const changeFolderObj = {
-      name: util.fileNameFilter(newName)
+    const findFoldersObj = {
+      parentFolderId: folderId
     }
-    const folder = await folderImpl.findOneAndDelete(findFolferObj, changeFolderObj)
+    const findFilesObj = {
+      parentFolderId: folderId
+    }
+    const folders = await folderImpl.findAll(findFoldersObj);
+    if(folders.length > 0){
+      return false;
+    } else {
+      const deletedFileCount = await fileImpl.deleteMany(findFilesObj);
+      const folder = await folderImpl.findOneAndDelete(findFolderObj);
+      console.log("삭제처리 완료")
+      console.log(deletedFileCount)
+      console.log(folder)
+      return true
+    }
+  } catch (error) {
+    console.log(error)
+    throw error;
+  }
+}
+exports.addRole = async (folderId, role, userId) => {
+  try {
+    const findObj = {
+      _id: folderId
+    }
+    const changeObj = {
+      $addToSet: {
+        sharedWith: {
+          user: userId,
+          role: role
+        }
+      }
+    }
+    const folder = await folderImpl.findOneAndUpdate(findObj, changeObj)
+    return folder;
+  } catch (error) {
+    console.log(error)
+    throw error;
+  }
+}
+exports.removeRole = async (folderId, role, userId) => {
+  try {
+    const findObj = {
+      _id: folderId
+    }
+    const changeObj = {
+      $pull: {
+        sharedWith: {
+          user: userId,
+          role: role
+        }
+      }
+    }
+    const folder = await folderImpl.findOneAndUpdate(findObj, changeObj)
     return folder;
   } catch (error) {
     console.log(error)
