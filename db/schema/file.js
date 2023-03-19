@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
-const sharedWithSchema = require('./sharedWith')
-const { Schema } = mongoose;
+const {Schema} = mongoose;
 
 const fileSchema = new Schema({
-  parentFolderId: {
+  location: {
     type: String,
     required: true
   },
@@ -11,7 +10,7 @@ const fileSchema = new Schema({
     type: String,
     required: true
   },
-  extention: {
+  mimetype: {
     type: String,
     required: true
   },
@@ -19,15 +18,6 @@ const fileSchema = new Schema({
     type: Number,
     required: true
   },
-  owner: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  sharedWith: [sharedWithSchema]
-},
-{
-  timestamps: true,
-});
+}, {timestamps: true});
 
 module.exports = mongoose.model('File', fileSchema);

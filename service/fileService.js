@@ -1,11 +1,10 @@
-const fileImpl = require('./impl/fileServiceImpl');
-const util = require('../js/common.util');
-let defaultFolderPath = "";
-const getDefaultFolder = async () => {
-  return defaultFolderPath;
+const path = require('path')
+const { v4:uuidv4 } = require('uuid');
+
+exports.upload = async (files) => {
+  const fileArray = Array.isArray(files) ? files : [files];
 }
-exports.getDefaultFolder
-exports.initUserFolder = async (_id) => {
-  fileImpl.mkdir(_id, path)
-  return true;
-} 
+exports.download = async (fileIds) => {
+
+  return ;
+}

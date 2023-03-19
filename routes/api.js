@@ -8,10 +8,6 @@ router.get('/', function(req, res, next) {
   res.send('respond with a resource2');
 });
 
-router.post('/upload', function(req, res) {
-  console.log(req.files.filename); // the uploaded file object
-});
-
 router.post("/login", async (req, res, next) => {
   passport.authenticate('local', {session: false}, (err, user, info) => {
     if(err || !user) {
@@ -89,7 +85,10 @@ router.get('/auth/google/callback',
 const userRouter = require('./user');
 router.use('/user', userRouter);
 
-const fileRouter = require('./file')
+const driveRouter = require('./drive');
+router.use('/drive', driveRouter);
+
+const fileRouter = require('./file');
 router.use('/file', fileRouter);
 
 module.exports = router;

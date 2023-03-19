@@ -3,6 +3,7 @@ const { encrypt, decrypt } = require("../js/crypto");
 const { isEmpty, generateRandomString } = require("../js/common.util");
 const mailImpl = require("./impl/mailServiceImpl")
 const verifyCodeImpl = require("./impl/VerifyCodeServiceImpl")
+const folderImpl = require("./impl/folderServiceImpl")
 
 const projectionUserObj = {
   provider: 1,
@@ -40,6 +41,12 @@ exports.register = async (reqBody) => {
       
       // 인증용 이메일 보내기
       await this.verifyEmail({email:user.email});
+      const folderObj = {
+        parentFolderId: "root",
+        name: "내 폴더",
+        owner: user._id,
+      }
+      await folderImpl.insertOne(folderObj)
 
       return user;
     } else {

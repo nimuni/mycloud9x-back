@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const sharedWithSchema = require('./sharedWith')
 const { Schema } = mongoose;
 
-const folderSchema = new Schema({
+const driveFolderSchema = new Schema({
   parentFolderId: {
     type: String,
     required: true
@@ -22,4 +22,4 @@ const folderSchema = new Schema({
   timestamps: true,
 });
 
-module.exports = mongoose.model('Folder', folderSchema);
+module.exports = mongoose.model('DriveFolder', driveFolderSchema);
