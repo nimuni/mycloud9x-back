@@ -3,7 +3,8 @@ const DriveFolder = require('../../db/schema/driveFolder');
 
 // DB에 폴더명을 생성함.
 exports.insertOne = async (folderObj) => {
-  return await new DriveFolder(folderObj);
+  const newDriveFolder = new DriveFolder(folderObj)
+  return await newDriveFolder.save();
 }
 exports.findAll = async (findObj) => {
   return await DriveFolder.find(findObj);

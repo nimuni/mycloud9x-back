@@ -1,22 +1,23 @@
 const fs = require('fs');
-const DriveFile = require('../../db/schema/driveFile');
+const File = require('../../db/schema/file');
 
 // DB에 파일명을 생성함.
 exports.insertOne = async (fileObj) => {
-  return await new DriveFile(fileObj);
+  const newFile = new File(fileObj)
+  return await newFile.save();
 }
 exports.findAll = async (findObj) => {
-  return await DriveFile.find(findObj);
+  return await File.find(findObj);
 }
 exports.findOne = async (findObj) => {
-  return await DriveFile.findOne(findObj);
+  return await File.findOne(findObj);
 }
 exports.findOneAndUpdate = async (findObj, changeObj) => {
-  return await DriveFile.findOneAndUpdate(findObj, changeObj, {returnOriginal:false})
+  return await File.findOneAndUpdate(findObj, changeObj, {returnOriginal:false})
 }
 exports.findOneAndDelete = async (findObj) => {
-  return await DriveFile.findOneAndDelete(findObj);
+  return await File.findOneAndDelete(findObj);
 }
 exports.deleteMany = async (findObj) => {
-  return await DriveFile.deleteMany(findObj);
+  return await File.deleteMany(findObj);
 }

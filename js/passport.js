@@ -28,7 +28,9 @@ module.exports = () => {
       id: 1,
       provider: 1,
       password: 1,
-      email_verified: 1
+      email: 1,
+      email_verified: 1,
+      role: 1
     }
     const user = await userServiceImpl.findOne({id:id}, projectionUserObj)
     if(user) {
@@ -37,13 +39,15 @@ module.exports = () => {
       user.comparePassword(password, (passError, isMatch) => {
         if (isMatch) {
           return done(null, {
-            provider: user.provider,
             id: user.id,
+            provider: user.provider,
             email: user.email,
-            email_verified: user.email_verified
+            email_verified: user.email_verified,
+            role: user.role
           });
+        } else {
+          return done(null, false, { message: '비밀번호가 틀렸습니다' });
         }
-        return done(null, false, { message: '비밀번호가 틀렸습니다' });
       });
     } else {
       return done(null, false, { message: '존재하지 않는 아이디입니다' });
@@ -62,7 +66,8 @@ module.exports = () => {
         provider: 1,
         password: 1,
         email: 1,
-        email_verified: 1
+        email_verified: 1,
+        role: 1
       }
       let exUser = await userServiceImpl.findOne({id:profile.id}, projectionUserObj)
       if(exUser){
@@ -90,6 +95,7 @@ module.exports = () => {
           id: newUser.id,
           email: newUser.email,
           email_verified: newUser.email_verified,
+          role: newUser.role
         });
       }
     } catch (error) {

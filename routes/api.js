@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const passport = require('passport');
-const { generateAccessToken, generateRefreshToken, accessTokenVerify, verifyJwt, refreshTokenVerify } = require("../js/jwt");
+const { generateAccessToken, generateRefreshToken, verifyJwt } = require("../js/jwt");
 const userService = require('../service/userService')
 
 // default api 설정
@@ -32,22 +32,6 @@ router.post("/login", async (req, res, next) => {
 router.get("/verifyToken", verifyJwt, async (req, res, next) => {
   console.log("call /api/user/verifyToken")
   res.send("success token verify")
-})
-router.post("/login", async (req, res, next) => {
-  console.log("call /api/login")
-  const comparePwd = await userService.login({id: req.body.id, password: req.body.password})
-  if(comparePwd){
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    // refreshToken 쿠키에 저장
-    res.cookie('refreshToken', refreshToken, { httpOnly:true, sameSite: 'strict'/* https 사용하는 경우. secure:true */})
-
-    // accessToken 반환
-    res.json({accessToken: accessToken});
-  } else {
-    res.status(401).json({ message: 'check user id and password again' });
-  }
 })
 // router.post('/logout', verifyJwt, (req, res) => {
 //   res.clearCookie('refreshToken');

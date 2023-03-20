@@ -84,12 +84,12 @@ router.post('/findPwd', async (req, res, next) => {
 });
 router.get('/verifyCode/:code', async (req, res, next) => {
   try {
-    let isVerified = await userService.verifyCode({code:req.params.code});
+    console.log("call /verifyCode/:code")
+    console.log(req.params.code)
+    let isVerified = await userService.verifyCode(req.params.code);
     if(isVerified){
-      res.status(200).send(true)
-      // TODO. url로 리다이렉션.
-      // const url = ""
-      // res.redirect(url)
+      const url = `${process.env.URI_ORIGIN}:${process.env.PORT}`
+      res.redirect(url)
     } else {
       res.status(200).send(false)
     }

@@ -11,26 +11,32 @@ exports.generateRefreshToken = (user) => {
   return jwt.sign({data:user}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 }
 exports.accessTokenVerify = (token) => {
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    if (err) {
-      console.error(err);
-      return false;
-    }
-    return decoded
-  });
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        console.error(err);
+        reject(false)
+      } else {
+        resolve(decoded)
+      }
+    });
+  })
 }
 exports.refreshTokenVerify = (token) => {
-  jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-    if (err) {
-      console.error(err);
-      return false;
-    }
-    return decoded
-  });
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        console.error(err);
+        reject(false)
+      } else {
+        resolve(decoded)
+      }
+    });
+  })
 }
 
 // middleware
-exports.verifyJwt = (req, res, next) => {
+exports.verifyJwt = async (req, res, next) => {
   // 0: 헤더 1:payload-저장한정보 2:verify signature
   // 처리가 안되면 세션만료인 것으로 판별.
   const authHeader = req.headers['authorization'];
@@ -42,8 +48,8 @@ exports.verifyJwt = (req, res, next) => {
 
   try {
     // access 토큰 인증완료.
-    const decodedAccessToken = this.accessTokenVerify(accessToken);
-    req.user = decodedAccessToken;
+    const decodedAccessToken = await this.accessTokenVerify(accessToken);
+    req.user = decodedAccessToken.data;
     next();
   } catch (error) {
     // access token이 만료된 경우
@@ -56,12 +62,13 @@ exports.verifyJwt = (req, res, next) => {
 
       // refresh token 검증
       try {
-        const decodedInfo = this.refreshTokenVerify(refreshToken);
+        const decodedInfo = await this.refreshTokenVerify(refreshToken);
         const userInfo = {
-          provider: decodedInfo.provider,
-          id: decodedInfo.id,
-          email: decodedInfo.email,
-          email_verified: decodedInfo.email_verified,
+          provider: decodedInfo.data.provider,
+          id: decodedInfo.data.id,
+          email: decodedInfo.data.email,
+          email_verified: decodedInfo.data.email_verified,
+          role: decodedInfo.data.role
         }
 
         // refresh token으로 새로운 access token과 refresh token 발행
@@ -71,7 +78,11 @@ exports.verifyJwt = (req, res, next) => {
         // 새로 발행된 토큰 쿠키에 저장
         res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict'/* https 사용하는 경우. secure:true */})
 
-        req.user = this.accessTokenVerify(newAccessToken);
+        req.user = userInfo;
+        console.log("req.user")
+        console.log(req.user)
+        
+        next();
       } catch (error) {
         // return res.status(401).json({ message: 'Invalid refresh token' });
         return res.redirect(`/login`)
@@ -80,5 +91,4 @@ exports.verifyJwt = (req, res, next) => {
       return res.status(401).json({ message: 'Invalid access token' });
     }
   }
-  next();
 }

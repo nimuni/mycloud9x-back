@@ -23,6 +23,10 @@ const userSchema = new Schema({
     type: Boolean,
     required: true,
   },
+  role: {
+    type: String,
+    default: "user"
+  },
   nickname: String,
   loginFailCount: {
     type: Number,

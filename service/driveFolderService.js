@@ -1,5 +1,5 @@
-const folderImpl = require('./impl/folderServiceImpl');
-const fileImpl = require('./impl/fileServiceImpl');
+const folderImpl = require('./impl/driveFolderServiceImpl');
+const fileImpl = require('./impl/driveFileServiceImpl');
 const util = require('../js/common.util');
 
 // 현재 경로 가져오기. 상위폴더들까지.
@@ -30,8 +30,12 @@ exports.mkdir = async (folderName, parentFolderId, userId) => {
     throw error;
   }
 }
-exports.readDir = async (folderId) => {
+exports.readDir = async (folderId, role) => {
   try {
+    if(role != 'admin' && folderId == 'root') {
+      return {files: [], folders: []};
+    }
+    
     const findObj = {
       parentFolderId: folderId
     }

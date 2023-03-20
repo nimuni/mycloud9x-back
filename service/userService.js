@@ -3,13 +3,14 @@ const { encrypt, decrypt } = require("../js/crypto");
 const { isEmpty, generateRandomString } = require("../js/common.util");
 const mailImpl = require("./impl/mailServiceImpl")
 const verifyCodeImpl = require("./impl/VerifyCodeServiceImpl")
-const folderImpl = require("./impl/folderServiceImpl")
+const folderImpl = require("./impl/driveFolderServiceImpl")
 
 const projectionUserObj = {
   provider: 1,
   id: 1,
   email: 1,
   email_verified: 1,
+  role: 1,
   createdAt: 1,
   updatedAt: 1
 }
@@ -69,6 +70,8 @@ exports.findAll = async (reqBody) => {
       findObj.email = reqBody.email;
     if(!isEmpty(reqBody?.email_verified)) 
       findObj.email_verified = reqBody.email_verified;
+    if(!isEmpty(reqBody?.role)) 
+      findObj.role = reqBody.role;
 
     const users = await userImpl.findAll(findObj, projectionUserObj)
     return users;
@@ -88,6 +91,8 @@ exports.findOne = async (reqBody) => {
       findObj.email = reqBody.email;
     if(!isEmpty(reqBody?.email_verified)) 
       findObj.email_verified = reqBody.email_verified;
+    if(!isEmpty(reqBody?.role)) 
+      findObj.role = reqBody.role;
 
     const user = await userImpl.findOne(findObj, projectionUserObj)
     return user;
@@ -113,6 +118,8 @@ exports.update = async (findObj, reqBody) => {
       changeObj.email = reqBody.email;
     if(!isEmpty(reqBody?.email_verified)) 
       changeObj.email_verified = reqBody.email_verified;
+    if(!isEmpty(reqBody?.role)) 
+      changeObj.role = reqBody.role;
 
     const changedUser = await userImpl.findOneAndUpdate(findObj, changeObj, projectionUserObj)
     return changedUser;
@@ -130,6 +137,7 @@ exports.login = async (idAndPwdObj) => {
         provider: user.provider,
         email: user.email,
         email_verified: user.email_verified,
+        role: user.role,
       };
     } else {
       // TODO. 일정 횟수 이상 로그인 실패하면 로그인 금지시키기.
@@ -226,8 +234,10 @@ exports.verifyEmail = async (userObj) => {
   }
 }
 exports.verifyCode = async (code) => {
+  console.log("call in userService verifyCode")
+  console.log(code)
   try {
-    const foundData = await verifyCodeImpl.findOneAndUpdate({verifyCode: code}, {verified: true})
+    const foundData = await verifyCodeImpl.findOneAndUpdate({verify_code: code}, {verified: true})
     if(foundData){
       const findObj = {
         email: foundData.email

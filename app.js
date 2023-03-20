@@ -44,7 +44,6 @@ app.use(fileUpload(
 		abortOnLimit: true,
 		createParentPath: true,
 		useTempFiles: true,
-		tempFileDir: '/tmp/',
 		debug: true
 	}
 ));

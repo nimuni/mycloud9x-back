@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
 const fileSchema = new Schema({
-  location: {
+  name: {
     type: String,
     required: true
   },
-  name: {
+  uuid: {
     type: String,
     required: true
   },

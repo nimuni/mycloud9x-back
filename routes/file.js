@@ -2,38 +2,42 @@ const router = require('express').Router();
 const fileService = require('../service/fileService');
 
 router.post('/upload', async (req, res, next) => {
-  if (!req.files) {
-    return res.status(400).json({ message: 'No files were uploaded' });
-  }
   try {
-    const fileIds = await fileService.upload(req.files.files);
-    res.send(fileIds);
+    if (!req.files) {
+      return res.status(400).json({ message: 'No files were uploaded' });
+    }
+    // 파일 업로드 처리
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send('No files were uploaded.');
+    }
+    const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
+    const fileIds = await fileService.upload(files);
+
+    res.send({fileIds: fileIds});
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: error.message });
   }
 });
 router.get('/download/:_id', async (req, res, next) => {
-  const { id } = req.params;
-
-  if (!ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid file ID' });
+  try {
+    const { _id } = req.params;
+    const fileData = await fileService.getFileData(_id)
+    res.download(fileData.filePath, fileData.fileName);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
   }
-
-  File.findById(id)
-    .then(file => {
-      if (!file) {
-        return res.status(404).json({ message: 'File not found' });
-      }
-
-      const filepath = path.join(__dirname, 'uploads', file.name);
-
-      res.download(filepath, file.name, err => {
-        if (err) {
-          res.status(500).json({ message: err.message });
-        }
-      });
-    })
-    .catch(err => res.status(500).json({ message: err.message }));
+});
+router.get('/downloadTest', async (req, res, next) => {
+  try {
+    const fileImpl = require('../service/impl/fileServiceImpl')
+    let data = await fileImpl.findAll()
+    res.send(data)
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 module.exports = router;
