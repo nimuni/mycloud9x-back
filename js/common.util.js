@@ -46,8 +46,12 @@ exports.generateRandomString = (num) => {
 // file util
 ///////////////////////////
 exports.fileNameFilter = (fileName) => {
+  console.log("call fileNameFilter")
+  console.log(typeof fileName)
+  console.log(fileName)
+  console.log(fileName.test)
   const ILLEGAL_EXP = /[\{\}\/?,;:|*~`!^\+<>@\#$%&\\\=\'\"]/gi;
-  if(fileName.test(ILLEGAL_EXP)){
+  if(ILLEGAL_EXP.test(fileName)){
     return fileName.replace(ILLEGAL_EXP, "");
   } else {
     return fileName

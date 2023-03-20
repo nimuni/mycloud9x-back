@@ -1,9 +1,11 @@
 const router = require('express').Router();
+const { ObjectId } = require('mongoose').Types;
 const fileService = require('../service/fileService');
 const driveFileService = require('../service/driveFileService');
 const driveFolderService = require('../service/driveFolderService');
 const { verifyJwt } = require("../js/jwt");
 
+// TODO. 기본 파일업로드 다운로드에서 아래 폴더에 업로드 하는것 구현해야함.
 ////////////////////////////// 
 // 파일 다운로드 및 업로드 기본
 //////////////////////////////
@@ -31,29 +33,43 @@ router.get('/downloadFromDrive/:_id', async (req, res, next) => {
 ////////////////////////////// 
 // 폴더 처리
 //////////////////////////////
-router.get('/folder/:_id', verifyJwt, async (req, res, next) => {
+router.get('/folder/info/:_id', verifyJwt, async (req, res, next) => {
   try {
-    console.log("call /folder/:_id")
-    console.log(req.params._id)
-    console.log(req.user.role)
-    const folder = await driveFolderService.readDir(req.params._id, req.user.role)
-    console.log(folder)
+    const findObj = {
+      _id: ObjectId(req.params._id),
+      owner: ObjectId(req.user._id)
+    }
+    const folder = await driveFolderService.readDirInfo(findObj)
     res.send(folder)
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: error.message });
   }
 });
-router.post('/folder', async (req, res, next) => {
+router.get('/folder/content/:parentFolderId', verifyJwt, async (req, res, next) => {
+  try {
+    const { parentFolderId } = req.params;
+    let tempParentFolderId = parentFolderId == "root" ? "root" : ObjectId(parentFolderId);
+    const findObj = {
+      parentFolderId: tempParentFolderId,
+      owner: req.user._id
+    }
+    const folder = await driveFolderService.readDir(findObj)
+    res.send(folder)
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
+router.post('/folder', verifyJwt, async (req, res, next) => {
   try {
     const { name, parentFolderId } = req.body;
+    const tempParentFolderId = parentFolderId == "root"? "root" : ObjectId(parentFolderId);
     const owner = req.user._id
   
     if(parentFolderId == "root") res.status(500).json({ message: "parentFolderId can not be root" });
     
-    const folder = await driveFolderService.mkdir(name, parentFolderId, owner);
-    // 해당 폴더경로 및 폴더명으로 폴더 생성
-    // data값으로 path를 전송해줘야함.
+    const folder = await driveFolderService.mkdir(name, tempParentFolderId, owner);
     res.send(folder);
   } catch (error) {
     console.log(error)
@@ -62,13 +78,12 @@ router.post('/folder', async (req, res, next) => {
 });
 router.put('/folder/:_id', async (req, res, next) => {
   try {
-    // 전송된 폴더경로 및 폴더명으로 폴더변경. 경로,이름변경. 
-    // 이동시 하위파일까지 같이 이동
-    const { name, parentFolderId, owner} = req.body;
-  
-    const folder = await driveFolderService.mkdir(req.params.id, {name, parentFolderId, owner});
-    // 해당 폴더경로 및 폴더명으로 폴더 생성
-    // data값으로 path를 전송해줘야함.
+    const { name, parentFolderId } = req.body;
+    let changeFolderObj = {}
+    if(name) changeFolderObj.name = name;
+    if(parentFolderId) changeFolderObj.parentFolderId = parentFolderId;
+
+    const folder = await driveFolderService.modifyDir(req.params._id, changeFolderObj);
     res.send(folder);
   } catch (error) {
     console.log(error)
@@ -79,14 +94,19 @@ router.delete('/folder/:_id', async (req, res, next) => {
   try {
     // 전송된 폴더경로 및 폴더명으로 폴더 삭제.
     // 삭제시 하위파일 존재하면 하위파일까지 전부 날려야함.
-    res.send('respond with a resource5');
+    const deleteResult = await driveFolderService.removeDir(req.params._id);
+    if(deleteResult){
+      res.status(204).send();
+    } else {
+      res.status(400).send();
+    }
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: error.message });
   }
 });
 
-
+// TODO. 파일처리부분 진행해야함
 ////////////////////////////// 
 // 파일처리
 //////////////////////////////

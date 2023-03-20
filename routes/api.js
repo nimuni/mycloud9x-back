@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const passport = require('passport');
 const { generateAccessToken, generateRefreshToken, verifyJwt } = require("../js/jwt");
-const userService = require('../service/userService')
 
 // default api 설정
 router.get('/', function(req, res, next) {

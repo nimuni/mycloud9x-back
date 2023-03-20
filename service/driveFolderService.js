@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongoose').Types;
 const folderImpl = require('./impl/driveFolderServiceImpl');
 const fileImpl = require('./impl/driveFileServiceImpl');
 const util = require('../js/common.util');
@@ -17,12 +18,22 @@ const util = require('../js/common.util');
 //     throw error
 //   }
 // }
+// TODO 현재 폴더의 가상경로 가져오기.
+// exports.getFolderPath = async (folderId) => {
+//   try {
+//     const folder = await folderImpl.findOne(findObj);
+//     return folder
+//   } catch (error) {
+//     console.log(error)
+//     throw error;
+//   }
+// }
 exports.mkdir = async (folderName, parentFolderId, userId) => {
   try {
     const folderObj = {
       name: folderName,
-      parentFolderId: parentFolderId,
-      owner: userId
+      parentFolderId: parentFolderId == "root" ? "root" : ObjectId(parentFolderId),
+      owner: ObjectId(userId)
     }
     return await folderImpl.insertOne(folderObj);
   } catch (error) {
@@ -30,15 +41,17 @@ exports.mkdir = async (folderName, parentFolderId, userId) => {
     throw error;
   }
 }
-exports.readDir = async (folderId, role) => {
+exports.readDirInfo = async (findObj) => {
   try {
-    if(role != 'admin' && folderId == 'root') {
-      return {files: [], folders: []};
-    }
-    
-    const findObj = {
-      parentFolderId: folderId
-    }
+    const folder = await folderImpl.findOne(findObj);
+    return folder
+  } catch (error) {
+    console.log(error)
+    throw error;
+  }
+}
+exports.readDir = async (findObj) => {
+  try {
     const files = await fileImpl.findAll(findObj);
     const folders = await folderImpl.findAll(findObj);
     return {
@@ -56,7 +69,7 @@ exports.mvdir = async (folderId, parentFolderId) => {
       _id: folderId
     }
     const changeFolderObj = {
-      parentFolderId: parentFolderId
+      parentFolderId: parentFolderId == "root" ? "root" : ObjectId(parentFolderId)
     }
     const folder = await folderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
     return folder;
@@ -65,14 +78,15 @@ exports.mvdir = async (folderId, parentFolderId) => {
     throw error;
   }
 }
-exports.renameDir = async (folderId, newName) => {
+exports.modifyDir = async (folderId, _changeFolderObj) => {
   try {
     const findFolderObj = {
       _id: folderId
     }
-    const changeFolderObj = {
-      name: util.fileNameFilter(newName)
-    }
+    let changeFolderObj = {}
+    if(_changeFolderObj.name) changeFolderObj.name = util.fileNameFilter(_changeFolderObj.name)
+    if(_changeFolderObj.parentFolderId) changeFolderObj.parentFolderId = _changeFolderObj.parentFolderId
+   
     const folder = await folderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
     return folder;
   } catch (error) {

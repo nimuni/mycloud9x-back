@@ -26,6 +26,7 @@ module.exports = () => {
   }, async (id, password, done) => {
     const projectionUserObj = {
       id: 1,
+      _id: 1,
       provider: 1,
       password: 1,
       email: 1,
@@ -40,6 +41,7 @@ module.exports = () => {
         if (isMatch) {
           return done(null, {
             id: user.id,
+            _id: user._id,
             provider: user.provider,
             email: user.email,
             email_verified: user.email_verified,
@@ -62,6 +64,7 @@ module.exports = () => {
   async (accessToken, refreshToken, profile, done) => {
     try {
       const projectionUserObj = {
+        _id: 1,
         id: 1,
         provider: 1,
         password: 1,
@@ -91,6 +94,7 @@ module.exports = () => {
           email_verified: profile.emails[0].verified
         })
         done(null, {
+          _id: newUser._id,
           provider: newUser.provider,
           id: newUser.id,
           email: newUser.email,

@@ -8,6 +8,7 @@ const folderImpl = require("./impl/driveFolderServiceImpl")
 const projectionUserObj = {
   provider: 1,
   id: 1,
+  _id: 1,
   email: 1,
   email_verified: 1,
   role: 1,
@@ -66,6 +67,8 @@ exports.findAll = async (reqBody) => {
       findObj.provider = reqBody.provider;
     if(!isEmpty(reqBody?.id)) 
       findObj.id = reqBody.id;
+    if(!isEmpty(reqBody?._id)) 
+      findObj.id = reqBody._id;
     if(!isEmpty(reqBody?.email)) 
       findObj.email = reqBody.email;
     if(!isEmpty(reqBody?.email_verified)) 
@@ -87,6 +90,8 @@ exports.findOne = async (reqBody) => {
       findObj.provider = reqBody.provider;
     if(!isEmpty(reqBody?.id)) 
       findObj.id = reqBody.id;
+    if(!isEmpty(reqBody?._id)) 
+      findObj.id = reqBody._id;
     if(!isEmpty(reqBody?.email)) 
       findObj.email = reqBody.email;
     if(!isEmpty(reqBody?.email_verified)) 
@@ -134,6 +139,7 @@ exports.login = async (idAndPwdObj) => {
     if(decrypt(user.password) == idAndPwdObj?.password){
       return {
         id: user.id,
+        _id: user._id,
         provider: user.provider,
         email: user.email,
         email_verified: user.email_verified,

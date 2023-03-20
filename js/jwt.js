@@ -66,6 +66,7 @@ exports.verifyJwt = async (req, res, next) => {
         const userInfo = {
           provider: decodedInfo.data.provider,
           id: decodedInfo.data.id,
+          _id: decodedInfo.data._id,
           email: decodedInfo.data.email,
           email_verified: decodedInfo.data.email_verified,
           role: decodedInfo.data.role
@@ -88,6 +89,8 @@ exports.verifyJwt = async (req, res, next) => {
         return res.redirect(`/login`)
       }
     } else {
+      console.log(error.name)
+      console.log(error)
       return res.status(401).json({ message: 'Invalid access token' });
     }
   }
