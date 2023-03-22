@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const { ObjectId } = require('mongoose').Types;
 const fileService = require('../service/fileService');
 const driveFileService = require('../service/driveFileService');
 const driveFolderService = require('../service/driveFolderService');
@@ -59,8 +58,8 @@ router.get('/folder/childFolderIds/:_id', verifyJwt, async (req, res, next) => {
 router.get('/folder/info/:_id', verifyJwt, async (req, res, next) => {
   try {
     const findObj = {
-      _id: ObjectId(req.params._id),
-      owner: ObjectId(req.user._id)
+      _id: req.params._id,
+      owner: req.user._id
     }
     const folder = await driveFolderService.readDirInfo(findObj)
     res.send(folder)
@@ -72,7 +71,7 @@ router.get('/folder/info/:_id', verifyJwt, async (req, res, next) => {
 router.get('/folder/content/:parentFolderId', verifyJwt, async (req, res, next) => {
   try {
     const { parentFolderId } = req.params;
-    let tempParentFolderId = parentFolderId == "root" ? "root" : ObjectId(parentFolderId);
+    let tempParentFolderId = parentFolderId == "root" ? "root" : parentFolderId;
     const findObj = {
       parentFolderId: tempParentFolderId,
       owner: req.user._id
@@ -87,7 +86,7 @@ router.get('/folder/content/:parentFolderId', verifyJwt, async (req, res, next) 
 router.post('/folder', verifyJwt, async (req, res, next) => {
   try {
     const { name, parentFolderId } = req.body;
-    const tempParentFolderId = parentFolderId == "root"? "root" : ObjectId(parentFolderId);
+    const tempParentFolderId = parentFolderId == "root"? "root" : parentFolderId;
     const owner = req.user._id
   
     if(parentFolderId == "root") res.status(500).json({ message: "parentFolderId can not be root" });
@@ -162,22 +161,15 @@ router.post('/uploadFile/:folderId', verifyJwt, async (req, res, next) => {
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).send('No files were uploaded.');
     }
+    console.log("call /uploadFile/:folderId")
+    console.log(req.params.folderId)
+    console.log(req.files)
+
     // 업로드 다운로드시 유저 로그인 체크하고 확인되면 진행.
     const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
-    const uploadfileArray = await fileService.upload(files);
-    const driveFileArray = uploadfileArray.map(element => {
-      return {
-        parentFolderId: ObjectId(req.params.folderId),
-        name: element.name,
-        extention: path.extname(element.name),
-        size: element.size,
-        owner: ObjectId(req.user._id),
-        savedFileId: element._id,
-      }
-    })
-    console.log(driveFileArray)
-    // const await upload
-    // TODOTODOTODOTO
+    const result = await driveFileService.uploadDriveFiles(req.params.folderId, files, req.user._id)
+    console.log("in router result")
+    console.log(result)
 
     res.send('respond with a resource3');
   } catch (error) {

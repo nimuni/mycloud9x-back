@@ -1,6 +1,5 @@
-const { ObjectId } = require('mongoose').Types;
-const folderImpl = require('./impl/driveFolderServiceImpl');
-const fileImpl = require('./impl/driveFileServiceImpl');
+const driveFolderImpl = require('./impl/driveFolderServiceImpl');
+const driveFileImpl = require('./impl/driveFileServiceImpl');
 const util = require('../js/common.util');
 const path = require('path');
 
@@ -65,7 +64,7 @@ exports.getRelativePath = async (currentFolderId, owner) => {
     let tempParentFolderId = null;
     let folderNameArray = [];
     while(tempParentFolderId != "root"){
-      let folderInfo = await folderImpl.findOne({_id:currentId})
+      let folderInfo = await driveFolderImpl.findOne({_id:currentId})
       currentId = folderInfo.parentFolderId;
       folderNameArray.push(folderInfo.name);
       tempParentFolderId = folderInfo.parentFolderId;
@@ -85,10 +84,10 @@ exports.getRelativePath = async (currentFolderId, owner) => {
 exports.getChildFolderIds = async (currentFolderId, owner) => {
   try {
     const findObj = {
-      owner: ObjectId(owner)
+      owner: owner
     }
     // DB쿼리 1회
-    const allFolderArray = await folderImpl.findAll(findObj);
+    const allFolderArray = await driveFolderImpl.findAll(findObj);
 
     // 검색 결과 자식들의 FolderId를 입력하는 변수
     let searchIds = [];
@@ -124,10 +123,10 @@ exports.mkdir = async (folderName, parentFolderId, userId) => {
   try {
     const folderObj = {
       name: folderName,
-      parentFolderId: parentFolderId == "root" ? "root" : ObjectId(parentFolderId),
-      owner: ObjectId(userId)
+      parentFolderId: parentFolderId == "root" ? "root" : parentFolderId,
+      owner: userId
     }
-    return await folderImpl.insertOne(folderObj);
+    return await driveFolderImpl.insertOne(folderObj);
   } catch (error) {
     console.log(error)
     throw error;
@@ -135,7 +134,7 @@ exports.mkdir = async (folderName, parentFolderId, userId) => {
 }
 exports.readDirInfo = async (findObj) => {
   try {
-    const folder = await folderImpl.findOne(findObj);
+    const folder = await driveFolderImpl.findOne(findObj);
     return folder
   } catch (error) {
     console.log(error)
@@ -144,8 +143,10 @@ exports.readDirInfo = async (findObj) => {
 }
 exports.readDir = async (findObj) => {
   try {
-    const files = await fileImpl.findAll(findObj);
-    const folders = await folderImpl.findAll(findObj);
+    console.log("call readDir in driveFolderService")
+    console.log(findObj)
+    const files = await driveFileImpl.findAll(findObj);
+    const folders = await driveFolderImpl.findAll(findObj);
     return {
       files: files,
       folders: folders
@@ -161,9 +162,9 @@ exports.mvdir = async (folderId, parentFolderId) => {
       _id: folderId
     }
     const changeFolderObj = {
-      parentFolderId: parentFolderId == "root" ? "root" : ObjectId(parentFolderId)
+      parentFolderId: parentFolderId == "root" ? "root" : parentFolderId
     }
-    const folder = await folderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
+    const folder = await driveFolderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
     return folder;
   } catch (error) {
     console.log(error)
@@ -179,7 +180,7 @@ exports.modifyDir = async (folderId, _changeFolderObj) => {
     if(_changeFolderObj.name) changeFolderObj.name = util.fileNameFilter(_changeFolderObj.name)
     if(_changeFolderObj.parentFolderId) changeFolderObj.parentFolderId = _changeFolderObj.parentFolderId
    
-    const folder = await folderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
+    const folder = await driveFolderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
     return folder;
   } catch (error) {
     console.log(error)
@@ -199,12 +200,12 @@ exports.removeDir = async (folderId) => {
     const findFilesObj = {
       parentFolderId: folderId
     }
-    const folders = await folderImpl.findAll(findFoldersObj);
+    const folders = await driveFolderImpl.findAll(findFoldersObj);
     if(folders.length > 0){
       return false;
     } else {
-      const deletedFileCount = await fileImpl.deleteMany(findFilesObj);
-      const folder = await folderImpl.findOneAndDelete(findFolderObj);
+      const deletedFileCount = await driveFileImpl.deleteMany(findFilesObj);
+      const folder = await driveFolderImpl.findOneAndDelete(findFolderObj);
       console.log("삭제처리 완료")
       console.log(deletedFileCount)
       console.log(folder)
@@ -228,7 +229,7 @@ exports.addRole = async (folderId, role, userId) => {
         }
       }
     }
-    const folder = await folderImpl.findOneAndUpdate(findObj, changeObj)
+    const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj)
     return folder;
   } catch (error) {
     console.log(error)
@@ -248,7 +249,7 @@ exports.removeRole = async (folderId, role, userId) => {
         }
       }
     }
-    const folder = await folderImpl.findOneAndUpdate(findObj, changeObj)
+    const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj)
     return folder;
   } catch (error) {
     console.log(error)

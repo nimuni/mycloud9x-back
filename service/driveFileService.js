@@ -1,29 +1,32 @@
 const driveFileImpl = require('./impl/driveFileServiceImpl');
-const fileImpl = require('./impl/fileServiceImpl');
-
-const { ObjectId } = require('mongoose').Types;
+const fileService = require('./fileService');
 const util = require('../js/common.util');
 const path = require('path');
 
 
-exports.uploadedFile = async (fileObj) => {
+exports.uploadDriveFiles = async (folderId, files, owner) => {
   try {
-    // User.insertMany([
-    //   { name: 'Gourav', age: 20},
-    //   { name: 'Kartik', age: 20},
-    //   { name: 'Niharika', age: 20}
-    // ]).then(function(){
-    //   console.log("Data inserted")  // Success
-    // }).catch(function(error){
-    //   console.log(error)      // Failure
-    // });
-    // DB에서 가상파일을 끊어내기.
-    const findObj = {
-      parentFolderId: { $in: folderIds},
-      owner: owner
-    }
-    const folder = await driveFileImpl.deleteMany(findObj)
-    return folder;
+    console.log("call uploadDriveFiles")
+    console.log(folderId)
+    console.log(files)
+    const uploadfileArray = await fileService.upload(files);
+    const driveFileArray = uploadfileArray.map(element => {
+      return {
+        parentFolderId: folderId,
+        name: element.name,
+        extention: path.extname(element.name),
+        size: element.size,
+        owner: owner,
+        savedFileId: element._id,
+      }
+    })
+    console.log(uploadfileArray)
+    console.log(driveFileArray)
+    const result = await driveFileImpl.insertMany(driveFileArray);
+    console.log("in service result")
+    console.log(result)
+
+    return result;
   } catch (error) {
     console.log(error)
     throw error;

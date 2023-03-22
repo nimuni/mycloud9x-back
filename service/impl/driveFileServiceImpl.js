@@ -6,6 +6,9 @@ exports.insertOne = async (fileObj) => {
   const newDriveFile = new DriveFile(fileObj)
   return await newDriveFile.save();
 }
+exports.insertMany = async (fileObjArray) => {
+  return await DriveFile.insertMany(fileObjArray)
+}
 exports.findAll = async (findObj) => {
   return await DriveFile.find(findObj);
 }
