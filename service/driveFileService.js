@@ -8,6 +8,15 @@ const path = require('path');
 
 exports.uploadedFile = async (fileObj) => {
   try {
+    // User.insertMany([
+    //   { name: 'Gourav', age: 20},
+    //   { name: 'Kartik', age: 20},
+    //   { name: 'Niharika', age: 20}
+    // ]).then(function(){
+    //   console.log("Data inserted")  // Success
+    // }).catch(function(error){
+    //   console.log(error)      // Failure
+    // });
     // DB에서 가상파일을 끊어내기.
     const findObj = {
       parentFolderId: { $in: folderIds},
