@@ -24,6 +24,10 @@ const driveFileSchema = new Schema({
     ref: 'User',
     required: true
   },
+  savedFileId: {
+    type: Schema.Types.ObjectId,
+    ref: 'File',
+  },
   sharedWith: [sharedWithSchema]
 },
 {

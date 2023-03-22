@@ -2,32 +2,124 @@ const { ObjectId } = require('mongoose').Types;
 const folderImpl = require('./impl/driveFolderServiceImpl');
 const fileImpl = require('./impl/driveFileServiceImpl');
 const util = require('../js/common.util');
+const path = require('path');
 
 // 현재 경로 가져오기. 상위폴더들까지.
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/graphLookup/#mongodb-pipeline-pipe.-graphLookup
-// exports.getRelativePath = async (folderId) => {
-//   try {
-//     const currentFolder = await folderImpl.findOne({_id:folderId});
-//     let tempParentFolderId = currentFolder.parentFolderId;
+exports.getRelativePath = async (currentFolderId, owner) => {
+  try {
+    console.log("call getRelativePath")
+    console.log(currentFolderId)
 
-//     while(tempParentFolderId != "root"){
-//       await folderImpl.findOne({parentFolderId:tempParentFolderId})
-//     }
-//   } catch (error) {
-//     console.log(error)
-//     throw error
-//   }
-// }
-// TODO 현재 폴더의 가상경로 가져오기.
-// exports.getFolderPath = async (folderId) => {
-//   try {
-//     const folder = await folderImpl.findOne(findObj);
-//     return folder
-//   } catch (error) {
-//     console.log(error)
-//     throw error;
-//   }
-// }
+    // 1번방법
+    // const pipeline = [
+    //   // 현재 폴더를 조회하기 위한 match stage
+    //   // { $match: { _id: ObjectId(currentFolderId) }},
+    //   { $match: { owner: ObjectId(owner) }},
+
+    //   // 필요한 필드만을 선택하기 위한 project stage
+    //   { $project: { _id: 1, parentFolderId: 1, name: 1 }},
+
+    //   // 최상위 폴더까지 상위 폴더를 조회하기 위한 graphLookup stage
+    //   {
+    //     $graphLookup: {
+    //       from: "drivefolders",
+    //       startWith: "$parentFolderId",
+    //       connectFromField: "parentFolderId",
+    //       connectToField: "_id",
+    //       as: "parentFolders",
+    //       maxDepth: 100,
+    //       restrictSearchWithMatch: { parentFolderId: { $eq: "root" } }
+    //     }
+    //   },
+    // ];
+    // let result = await folderImpl.pipeline(pipeline);
+
+    // 2번방법
+    // const pipeline = [
+    //   // 현재 폴더부터 상위 폴더까지 조회하기 위한 unwind stage
+    //   { $match: { owner: ObjectId(owner) }},
+    //   {
+    //     $graphLookup: {
+    //       from: "drivefolders",
+    //       startWith: "$parentFolderId",
+    //       connectFromField: "parentFolderId",
+    //       connectToField: "_id",
+    //       as: "parentFolders",
+    //       maxDepth: 100,
+    //       restrictSearchWithMatch: { parentFolderId: { $eq: "root" } }
+    //     }
+    //   },
+    //   // 결과를 역순으로 정렬하여 현재 폴더부터 시작하도록 함
+    //   { $sort: { "parentFolders.depth": 1 } },
+    //   // 필요한 필드만을 선택하기 위한 project stage
+    //   // { $project: { _id: 1, parentFolderId: 1, name: 1, depth: { $size: "$parentFolders" } } }
+    // ];
+    // let result = await folderImpl.pipeline(pipeline);
+    // console.log("pipeline result=")
+    // console.log(result)
+
+    // 3번방법
+    // 주먹구구식. TODO 추후 바꿔야함.
+    let currentId = currentFolderId;
+    let tempParentFolderId = null;
+    let folderNameArray = [];
+    while(tempParentFolderId != "root"){
+      let folderInfo = await folderImpl.findOne({_id:currentId})
+      currentId = folderInfo.parentFolderId;
+      folderNameArray.push(folderInfo.name);
+      tempParentFolderId = folderInfo.parentFolderId;
+    }
+    folderNameArray.reverse();
+    let resultPath = "\\";
+    folderNameArray.forEach(element => {
+      resultPath = path.join(resultPath, element)
+    });
+    
+    return resultPath;
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+exports.getChildFolderIds = async (currentFolderId, owner) => {
+  try {
+    const findObj = {
+      owner: ObjectId(owner)
+    }
+    // DB쿼리 1회
+    const allFolderArray = await folderImpl.findAll(findObj);
+
+    // 검색 결과 자식들의 FolderId를 입력하는 변수
+    let searchIds = [];
+    searchIds.push(currentFolderId)
+
+    // 검색결과 나타난 임시 자식Array
+    let resultFolders = [];
+
+    do {
+      // 현재 검색용 IDs array의 0번아이디 검색
+      let tempFolders = allFolderArray.filter(element => element.parentFolderId == searchIds[0])
+      let tempFildersId = tempFolders.map(element => element._id);
+      searchIds.push(...tempFildersId);
+
+      // 찾은 폴더의 결과물들을 추가.
+      resultFolders.push(...tempFolders);
+
+      // 검색완료된 0번째 요소 제거
+      searchIds.splice(0, 1);
+    } while (searchIds.length > 0);
+
+    console.log("getChildFolderIds result")
+    console.log(searchIds)
+    console.log(resultFolders)
+
+    return resultFolders.map(e => e._id);
+  } catch (error) {
+    console.log(error)
+    throw error;
+  }
+}
 exports.mkdir = async (folderName, parentFolderId, userId) => {
   try {
     const folderObj = {

@@ -7,7 +7,7 @@ const uploadPath = path.join(process.cwd(), 'uploads');
 
 exports.upload = async (files) => {
   console.log("call fileService upload")
-  let fileIds = [];
+  let filesInfo = [];
   for (let file of files) {
     // 파일 정보 생성
     const fileUUID = uuidv4();
@@ -23,9 +23,10 @@ exports.upload = async (files) => {
       mimetype: file.mimetype,
       size: file.size
     })
-    fileIds.push(savedFileData._id.toString())
+    // filesInfo.push(savedFileData._id.toString())
+    filesInfo.push(savedFileData)
   }
-  return fileIds;
+  return filesInfo;
 }
 exports.getFileData = async (fileId) => {
   const fileData = await fileImpl.findOne({_id:fileId})

@@ -11,9 +11,8 @@ router.post('/upload', async (req, res, next) => {
       return res.status(400).send('No files were uploaded.');
     }
     const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
-    const fileIds = await fileService.upload(files);
-
-    res.send({fileIds: fileIds});
+    const filesInfo = await fileService.upload(files);
+    res.send({fileIds: filesInfo.map(e => e._id.toString())});
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: error.message });

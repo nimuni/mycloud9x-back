@@ -4,6 +4,7 @@ const fileService = require('../service/fileService');
 const driveFileService = require('../service/driveFileService');
 const driveFolderService = require('../service/driveFolderService');
 const { verifyJwt } = require("../js/jwt");
+const { fileNameFilter } = require('../js/common.util')
 
 // TODO. 기본 파일업로드 다운로드에서 아래 폴더에 업로드 하는것 구현해야함.
 ////////////////////////////// 
@@ -33,6 +34,28 @@ router.get('/downloadFromDrive/:_id', async (req, res, next) => {
 ////////////////////////////// 
 // 폴더 처리
 //////////////////////////////
+
+router.get('/folder/relativePath/:_id', verifyJwt, async (req, res, next) => {
+  try {
+    const pipelineResult = await driveFolderService.getRelativePath(req.params._id, req.user._id)
+    res.send(pipelineResult)
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
+router.get('/folder/childFolderIds/:_id', verifyJwt, async (req, res, next) => {
+  try {
+    let childFolderIds = []
+    // childFolderIds.push(req.params._id) // 현재 폴더 ID 추가
+    let foundFolderIds = await driveFolderService.getChildFolderIds(req.params._id, req.user._id)
+    childFolderIds.push(...foundFolderIds)
+    res.send(childFolderIds)
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
 router.get('/folder/info/:_id', verifyJwt, async (req, res, next) => {
   try {
     const findObj = {
@@ -69,7 +92,7 @@ router.post('/folder', verifyJwt, async (req, res, next) => {
   
     if(parentFolderId == "root") res.status(500).json({ message: "parentFolderId can not be root" });
     
-    const folder = await driveFolderService.mkdir(name, tempParentFolderId, owner);
+    const folder = await driveFolderService.mkdir(fileNameFilter(name), tempParentFolderId, owner);
     res.send(folder);
   } catch (error) {
     console.log(error)
@@ -80,7 +103,7 @@ router.put('/folder/:_id', async (req, res, next) => {
   try {
     const { name, parentFolderId } = req.body;
     let changeFolderObj = {}
-    if(name) changeFolderObj.name = name;
+    if(name) changeFolderObj.name = fileNameFilter(name);
     if(parentFolderId) changeFolderObj.parentFolderId = parentFolderId;
 
     const folder = await driveFolderService.modifyDir(req.params._id, changeFolderObj);
@@ -94,7 +117,15 @@ router.delete('/folder/:_id', async (req, res, next) => {
   try {
     // 전송된 폴더경로 및 폴더명으로 폴더 삭제.
     // 삭제시 하위파일 존재하면 하위파일까지 전부 날려야함.
-    const deleteResult = await driveFolderService.removeDir(req.params._id);
+    let folderIds = []
+    const owner = req.user._id
+    const currentFolderInfo = await driveFolderService.readDirInfo({_id:req.params._id});
+    if(currentFolderInfo.parentFolderId != "root") folderIds.push(req.params._id);
+    let childFolderIds = await driveFolderService.getChildFolderIds(req.params._id, owner);
+    folderIds.push(...childFolderIds)
+    
+    const deleteFileResult = await driveFileService.deleteManyFromFolder(folderIds, owner);
+    const deleteFolderResult = await driveFolderService.deleteMany(folderIds, owner);
     if(deleteResult){
       res.status(204).send();
     } else {
@@ -122,12 +153,32 @@ router.get('/file/:fileId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
-router.post('/uploadFile/:folderId', async (req, res, next) => {
+router.post('/uploadFile/:folderId', verifyJwt, async (req, res, next) => {
   try {
-    // 인자값으로 경로 및 파일명을 받아서(urlEncode 필수)
-    // 혹은 userFilePath: "/myFolder1/abcd.png", file: Blob(~~~~~);
-    // 해당 경로에 파일 생성 및 업로드. 경로에 폴더가 없으면 폴더 같이 생성
+    if (!req.files) {
+      return res.status(400).json({ message: 'No files were uploaded' });
+    }
+    // 파일 업로드 처리
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send('No files were uploaded.');
+    }
     // 업로드 다운로드시 유저 로그인 체크하고 확인되면 진행.
+    const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
+    const uploadfileArray = await fileService.upload(files);
+    const driveFileArray = uploadfileArray.map(element => {
+      return {
+        parentFolderId: ObjectId(req.params.folderId),
+        name: element.name,
+        extention: path.extname(element.name),
+        size: element.size,
+        owner: ObjectId(req.user._id),
+        savedFileId: element._id,
+      }
+    })
+    console.log(driveFileArray)
+    // const await upload
+    // TODOTODOTODOTO
+
     res.send('respond with a resource3');
   } catch (error) {
     console.log(error)

@@ -12,6 +12,9 @@ exports.findAll = async (findObj) => {
 exports.findOne = async (findObj) => {
   return await DriveFolder.findOne(findObj);
 }
+exports.pipeline = async (pipeline) => {
+  return await DriveFolder.aggregate(pipeline)
+}
 exports.findOneAndUpdate = async (findObj, changeObj) => {
   return await DriveFolder.findOneAndUpdate(findObj, changeObj, {returnOriginal:false})
 }
