@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const fileService = require('../service/fileService');
 
+// 기본업로드. 드라이브를 이용해서 올리는 것 말고, 
+// 서버에 프로필 이미지나 기타 자료를 업로드 할 때 사용.
 router.post('/upload', async (req, res, next) => {
   try {
     if (!req.files) {
@@ -18,21 +20,12 @@ router.post('/upload', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 기본 다운로드. 업로드된 파일의 ID기반으로 해당 파일을 다운로드.
 router.get('/download/:_id', async (req, res, next) => {
   try {
     const { _id } = req.params;
-    const fileData = await fileService.getFileData(_id)
-    res.download(fileData.filePath, fileData.fileName);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-router.get('/downloadTest', async (req, res, next) => {
-  try {
-    const fileImpl = require('../service/impl/fileServiceImpl')
-    let data = await fileImpl.findAll()
-    res.send(data)
+    const filePath = await fileService.getFileData(_id)
+    res.download(filePath);
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');

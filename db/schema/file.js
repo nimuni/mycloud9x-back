@@ -18,6 +18,10 @@ const fileSchema = new Schema({
     type: Number,
     required: true
   },
+  currentPath: {
+    type: String,
+    required: true
+  }
 }, {timestamps: true});
 
 module.exports = mongoose.model('File', fileSchema);

@@ -32,7 +32,6 @@ app.use(passport.session()); // 세션 연결
 db();
 passportConfig();
 
-
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));

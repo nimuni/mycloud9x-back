@@ -34,6 +34,7 @@ router.get('/downloadFromDrive/:_id', async (req, res, next) => {
 // 폴더 처리
 //////////////////////////////
 
+// 폴더의 상대경로를 얻어옴
 router.get('/folder/relativePath/:_id', verifyJwt, async (req, res, next) => {
   try {
     const pipelineResult = await driveFolderService.getRelativePath(req.params._id, req.user._id)
@@ -43,6 +44,7 @@ router.get('/folder/relativePath/:_id', verifyJwt, async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 현재 폴더의 자식폴더ID를 얻어옴
 router.get('/folder/childFolderIds/:_id', verifyJwt, async (req, res, next) => {
   try {
     let childFolderIds = []
@@ -55,6 +57,7 @@ router.get('/folder/childFolderIds/:_id', verifyJwt, async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 현재 폴더의 정보를 얻어옴
 router.get('/folder/info/:_id', verifyJwt, async (req, res, next) => {
   try {
     const findObj = {
@@ -68,6 +71,7 @@ router.get('/folder/info/:_id', verifyJwt, async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 부모폴더ID를 기반으로 해당 폴더안의 폴더와 파일들을 얻어옴
 router.get('/folder/content/:parentFolderId', verifyJwt, async (req, res, next) => {
   try {
     const { parentFolderId } = req.params;
@@ -76,13 +80,14 @@ router.get('/folder/content/:parentFolderId', verifyJwt, async (req, res, next) 
       parentFolderId: tempParentFolderId,
       owner: req.user._id
     }
-    const folder = await driveFolderService.readDir(findObj)
-    res.send(folder)
+    const filesAndFolders = await driveFolderService.readDir(findObj)
+    res.send(filesAndFolders)
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: error.message });
   }
 });
+// 전송한 정보로 폴더 생성
 router.post('/folder', verifyJwt, async (req, res, next) => {
   try {
     const { name, parentFolderId } = req.body;
@@ -98,6 +103,7 @@ router.post('/folder', verifyJwt, async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 폴더정보 변경 (이름변경, 위치이동)
 router.put('/folder/:_id', async (req, res, next) => {
   try {
     const { name, parentFolderId } = req.body;
@@ -112,6 +118,7 @@ router.put('/folder/:_id', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 폴더 공유자권한 추가
 router.put('/folder/grantPermission/:folderId', async (req, res, next) => {
   try {
     const { userId, role, endTimestamp } = req.body
@@ -129,6 +136,7 @@ router.put('/folder/grantPermission/:folderId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 폴더 공유자권한 제거
 router.put('/folder/revokePermission/:folderId', async (req, res, next) => {
   try {
     const { userId, role } = req.body
@@ -145,6 +153,7 @@ router.put('/folder/revokePermission/:folderId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 해당 폴더 삭제. 
 router.delete('/folder/:_id', async (req, res, next) => {
   try {
     // 전송된 폴더경로 및 폴더명으로 폴더 삭제.
@@ -153,11 +162,16 @@ router.delete('/folder/:_id', async (req, res, next) => {
     const owner = req.user._id
     const currentFolderInfo = await driveFolderService.readDirInfo({_id:req.params._id});
     if(currentFolderInfo.parentFolderId != "root") folderIds.push(req.params._id);
-    let childFolderIds = await driveFolderService.getChildFolderIds(req.params._id, owner);
+    const childFolderIds = await driveFolderService.getChildFolderIds(req.params._id, owner);
     folderIds.push(...childFolderIds)
     
+    // 해당 폴더IDs를 상위로 가지고있는 파일 및 폴더 삭제
     const deleteFileResult = await driveFileService.deleteManyFromFolder(folderIds, owner);
     const deleteFolderResult = await driveFolderService.deleteMany(folderIds, owner);
+    console.log(deleteFileResult)
+    console.log(deleteFolderResult)
+    let deleteResult = deleteFileResult.length + deleteFolderResult.length
+    console.log(deleteResult)
     if(deleteResult){
       res.status(204).send();
     } else {
@@ -173,6 +187,7 @@ router.delete('/folder/:_id', async (req, res, next) => {
 ////////////////////////////// 
 // 파일처리
 //////////////////////////////
+// 해당 폴더ID를 부모로가지게 파일들 업로드
 router.post('/uploadFiles/:folderId', verifyJwt, async (req, res, next) => {
   try {
     if (!req.files) {
@@ -193,6 +208,7 @@ router.post('/uploadFiles/:folderId', verifyJwt, async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// driveFile의 id를 기반으로, 해당 파일의 정보 조회
 router.get('/file/:fileId', async (req, res, next) => {
   try {
     // 해당 경로의 파일 정보를 리턴
@@ -203,6 +219,7 @@ router.get('/file/:fileId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// driveFile의 id를 기반으로, 파일명 변경, 파일 이동
 router.put('/file/:fileId', async (req, res, next) => {
   try {
     // 파일을 이동하거나 이름 변경만 가능
@@ -219,6 +236,7 @@ router.put('/file/:fileId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// driveFile의 id를 기반으로 공유자 권한 추가
 router.put('/file/grantPermission/:fileId', async (req, res, next) => {
   try {
     const { userId, role, endTimestamp } = req.body
@@ -236,6 +254,7 @@ router.put('/file/grantPermission/:fileId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// driveFile의 id를 기반으로 공유자 권한 제거
 router.put('/file/revokePermission/:fileId', async (req, res, next) => {
   try {
     const { userId, role } = req.body
@@ -252,6 +271,7 @@ router.put('/file/revokePermission/:fileId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+// driveFile의 id를 기반으로 파일 삭제
 router.delete('/file/fileId/:fileId', async (req, res, next) => {
   try {
     // 파일 ID를 받아서 해당 파일을 삭제시킴
@@ -273,6 +293,11 @@ router.delete('/file/folderIds', async (req, res, next) => {
   }
 });
 
+
+// TODO
+// 파일 공유링크 생성.
+// 공유링크 생성 시, 해당 URL을 통해서 파일접근이 가능하도록.
+// 조회시
 ////////////////////////////// 
 // 파일공유
 //////////////////////////////
