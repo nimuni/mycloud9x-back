@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const sharedWithSchema = new Schema({
+const permissionWithSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -11,7 +11,8 @@ const sharedWithSchema = new Schema({
     type: String,
     enum: ['editor', 'viewer'],
     required: true
-  }
+  },
+  endDate: Date
 });
 
-module.exports = sharedWithSchema;
+module.exports = permissionWithSchema;

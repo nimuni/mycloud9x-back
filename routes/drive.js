@@ -112,6 +112,39 @@ router.put('/folder/:_id', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
+router.put('/folder/grantPermission/:folderId', async (req, res, next) => {
+  try {
+    const { userId, role, endTimestamp } = req.body
+
+    const permissionObj = {
+      user: userId,
+      role: role,
+      endDate: new Date(endTimestamp)
+    };
+
+    const modifiedFolder = await driveFolderService.grantPermission(req.params.folderId, permissionObj, req.user._id);
+    res.send(modifiedFolder);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
+router.put('/folder/revokePermission/:folderId', async (req, res, next) => {
+  try {
+    const { userId, role } = req.body
+
+    const permissionObj = {
+      user: userId,
+      role: role
+    };
+
+    const modifiedFolder = await driveFolderService.revokePermission(req.params.folderId, permissionObj, req.user._id);
+    res.send(modifiedFolder);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
 router.delete('/folder/:_id', async (req, res, next) => {
   try {
     // 전송된 폴더경로 및 폴더명으로 폴더 삭제.
@@ -140,19 +173,7 @@ router.delete('/folder/:_id', async (req, res, next) => {
 ////////////////////////////// 
 // 파일처리
 //////////////////////////////
-router.get('/file/:fileId', async (req, res, next) => {
-  try {
-    // 해당 경로의 파일 정보를 리턴
-    // userFilePath 는 유저의 상대 하위 폴더 경로 및 파일명, 확장자명까지 포함
-    // ex) http://localhost/myFolder1/abcd.png
-    // /myFolder1/abcd.png 가 변수값으로 들어옴
-    res.send('respond with a resource1');
-  } catch (error) {
-    console.log(error)
-    res.status(500).json({ message: error.message });
-  }
-});
-router.post('/uploadFile/:folderId', verifyJwt, async (req, res, next) => {
+router.post('/uploadFiles/:folderId', verifyJwt, async (req, res, next) => {
   try {
     if (!req.files) {
       return res.status(400).json({ message: 'No files were uploaded' });
@@ -161,17 +182,22 @@ router.post('/uploadFile/:folderId', verifyJwt, async (req, res, next) => {
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).send('No files were uploaded.');
     }
-    console.log("call /uploadFile/:folderId")
-    console.log(req.params.folderId)
-    console.log(req.files)
 
     // 업로드 다운로드시 유저 로그인 체크하고 확인되면 진행.
     const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
-    const result = await driveFileService.uploadDriveFiles(req.params.folderId, files, req.user._id)
-    console.log("in router result")
-    console.log(result)
+    const uploadedFileInfoArray = await driveFileService.uploadDriveFiles(req.params.folderId, files, req.user._id)
 
-    res.send('respond with a resource3');
+    res.send(`${uploadedFileInfoArray.length} uploaded success`);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
+router.get('/file/:fileId', async (req, res, next) => {
+  try {
+    // 해당 경로의 파일 정보를 리턴
+    const foundFile = await driveFileService.findOne(req.params.fileId, req.user._id);
+    res.send(foundFile);
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: error.message });
@@ -179,19 +205,68 @@ router.post('/uploadFile/:folderId', verifyJwt, async (req, res, next) => {
 });
 router.put('/file/:fileId', async (req, res, next) => {
   try {
-    // 인자값으로 경로 및 파일명을 받아서
-    // 파일을 이동하거나 이름 변경
-    res.send('respond with a resource4');
+    // 파일을 이동하거나 이름 변경만 가능
+    const { name, parentFolderId } = req.body
+
+    const changeFileInfoObj = {};
+    if(name) changeFileInfoObj.name = req.body.name;
+    if(parentFolderId) changeFileInfoObj.parentFolderId = req.body.parentFolderId;
+
+    const modifiedFile = await driveFileService.update(req.params.fileId, changeFileInfoObj, req.user._id);
+    res.send(modifiedFile);
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: error.message });
   }
 });
-router.delete('/file/:fileId', async (req, res, next) => {
+router.put('/file/grantPermission/:fileId', async (req, res, next) => {
   try {
-    // 인자값으로 경로 및 파일명을 받아서
-    // 해당 파일을 삭제시킴
-    res.send('respond with a resource5');
+    const { userId, role, endTimestamp } = req.body
+
+    const permissionObj = {
+      user: userId,
+      role: role,
+      endDate: new Date(endTimestamp)
+    };
+
+    const modifiedFile = await driveFileService.grantPermission(req.params.fileId, permissionObj, req.user._id);
+    res.send(modifiedFile);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
+router.put('/file/revokePermission/:fileId', async (req, res, next) => {
+  try {
+    const { userId, role } = req.body
+
+    const permissionObj = {
+      user: userId,
+      role: role
+    };
+
+    const modifiedFile = await driveFileService.revokePermission(req.params.fileId, permissionObj, req.user._id);
+    res.send(modifiedFile);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
+router.delete('/file/fileId/:fileId', async (req, res, next) => {
+  try {
+    // 파일 ID를 받아서 해당 파일을 삭제시킴
+    const deletedFile = await driveFileService.delete(req.params.fileId, req.user._id)
+    res.send(deletedFile);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+});
+router.delete('/file/folderIds', async (req, res, next) => {
+  try {
+    // 파일 ID를 받아서 해당 파일을 삭제시킴
+    const deletedFile = await driveFileService.delete(req.params.fileId, req.user._id)
+    res.send(deletedFile);
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: error.message });
@@ -201,14 +276,16 @@ router.delete('/file/:fileId', async (req, res, next) => {
 ////////////////////////////// 
 // 파일공유
 //////////////////////////////
-router.post('/shareFile', async (req, res, next) => {
+router.post('/shareFile/:fildId', async (req, res, next) => {
   try {
-    // 인자값으로 경로 및 파일명을 받아서(urlEncode 필수)
-    // 혹은 userFilePath: "/myFolder1/abcd.png", file: Blob(~~~~~), period:~~까지
-    // 해당 파일을 공유하기 위한 링크 생성.
-    // DB에 누가 공유했는지, 언제까지인지 정보 생성
-    // 업로드 다운로드시 유저 로그인 체크하고 확인되면 진행.
-    // 임시경로 생성 시 존재여부 확인 이후 진행
+    // 파일 및 사용자 정보를 받아서 
+    // req.params.fildId
+    // req.body.role
+    // req.body.userId
+
+    // 파일에 공유정보를 입력한다.
+
+    // 단일 파일만 볼 수 있는 drive. 리턴 시 파일 조회부분만 표시    
     res.send('respond with a resource3');
   } catch (error) {
     console.log(error)

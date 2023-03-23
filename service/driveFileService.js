@@ -6,9 +6,6 @@ const path = require('path');
 
 exports.uploadDriveFiles = async (folderId, files, owner) => {
   try {
-    console.log("call uploadDriveFiles")
-    console.log(folderId)
-    console.log(files)
     const uploadfileArray = await fileService.upload(files);
     const driveFileArray = uploadfileArray.map(element => {
       return {
@@ -20,83 +17,100 @@ exports.uploadDriveFiles = async (folderId, files, owner) => {
         savedFileId: element._id,
       }
     })
-    console.log(uploadfileArray)
-    console.log(driveFileArray)
-    const result = await driveFileImpl.insertMany(driveFileArray);
-    console.log("in service result")
-    console.log(result)
-
-    return result;
+    const uploadedFileInfoArray = await driveFileImpl.insertMany(driveFileArray);
+    return uploadedFileInfoArray;
   } catch (error) {
     console.log(error)
     throw error;
   }
 }
-exports.findOne = async (folderIds, owner) => {
+exports.findOne = async (fileId, owner) => {
   try {
     // DB에서 가상파일을 끊어내기.
     const findObj = {
-      parentFolderId: { $in: folderIds},
+      _id: fileId,
       owner: owner
     }
-    const folder = await driveFileImpl.deleteMany(findObj)
-    return folder;
+    const file = await driveFileImpl.findOne(findObj)
+    return file;
   } catch (error) {
     console.log(error)
     throw error;
   }
 }
-exports.findAll = async (folderIds, owner) => {
+exports.update = async (fileId, changeFileInfoObj, owner) => {
   try {
     // DB에서 가상파일을 끊어내기.
     const findObj = {
-      parentFolderId: { $in: folderIds},
+      _id: fileId,
       owner: owner
     }
-    const folder = await driveFileImpl.deleteMany(findObj)
-    return folder;
+    const file = await driveFolderImpl.findOneAndUpdate(findObj, changeFileInfoObj)
+    return file;
   } catch (error) {
     console.log(error)
     throw error;
   }
 }
-exports.update = async (folderIds, owner) => {
+exports.delete = async (fileId, owner) => {
   try {
     // DB에서 가상파일을 끊어내기.
     const findObj = {
-      parentFolderId: { $in: folderIds},
+      _id: fileId,
       owner: owner
     }
-    const folder = await driveFileImpl.deleteMany(findObj)
-    return folder;
+    const file = await driveFileImpl.findOneAndDelete(findObj)
+    return file;
   } catch (error) {
     console.log(error)
     throw error;
   }
 }
-exports.delete = async (folderIds, owner) => {
+exports.deleteManyFromFolderIds = async (folderIdsArray, owner) => {
   try {
     // DB에서 가상파일을 끊어내기.
     const findObj = {
-      parentFolderId: { $in: folderIds},
+      parentFolderId: { $in: folderIdsArray},
       owner: owner
     }
-    const folder = await driveFileImpl.deleteMany(findObj)
-    return folder;
+    const file = await driveFileImpl.deleteMany(findObj)
+    return file;
   } catch (error) {
     console.log(error)
     throw error;
   }
 }
-exports.deleteManyFromFolder = async (folderIds, owner) => {
+exports.grantPermission = async (fileId, permissionObj, owner) => {
   try {
-    // DB에서 가상파일을 끊어내기.
     const findObj = {
-      parentFolderId: { $in: folderIds},
+      _id: fileId,
       owner: owner
     }
-    const folder = await driveFileImpl.deleteMany(findObj)
-    return folder;
+    const changeObj = {
+      $addToSet: {
+        permissionWith: permissionObj
+      }
+    }
+    const file = await drivefileImpl.findOneAndUpdate(findObj, changeObj)
+    return file;
+  } catch (error) {
+    console.log(error)
+    throw error;
+  }
+}
+exports.revokePermission = async (fileId, permissionObj, owner) => {
+  try {
+    const findObj = {
+      _id: fileId,
+      owner: owner
+    }
+    const changeObj = {
+      $pull: {
+        permissionWith: permissionObj
+      }
+    }
+    const file = await driveFileImpl.findOneAndUpdate(findObj, changeObj)
+    return file;
   } catch (error) {
     console.log(error)
     throw error;

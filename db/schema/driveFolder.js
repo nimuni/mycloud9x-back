@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const sharedWithSchema = require('./sharedWith')
+const permissionWithSchema = require('./permissionWith')
 const { Schema } = mongoose;
 
 const driveFolderSchema = new Schema({
@@ -16,7 +16,7 @@ const driveFolderSchema = new Schema({
     ref: 'User',
     required: true
   },
-  sharedWith: [sharedWithSchema]
+  permissionWith: [permissionWithSchema]
 },
 {
   timestamps: true,

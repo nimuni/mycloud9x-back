@@ -177,7 +177,7 @@ exports.modifyDir = async (folderId, _changeFolderObj) => {
       _id: folderId
     }
     let changeFolderObj = {}
-    if(_changeFolderObj.name) changeFolderObj.name = util.fileNameFilter(_changeFolderObj.name)
+    if(_changeFolderObj.name) changeFolderObj.name = _changeFolderObj.name
     if(_changeFolderObj.parentFolderId) changeFolderObj.parentFolderId = _changeFolderObj.parentFolderId
    
     const folder = await driveFolderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
@@ -216,17 +216,15 @@ exports.removeDir = async (folderId) => {
     throw error;
   }
 }
-exports.addRole = async (folderId, role, userId) => {
+exports.grantPermission = async (folderId, permissionObj, owner) => {
   try {
     const findObj = {
-      _id: folderId
+      _id: folderId,
+      owner: owner
     }
     const changeObj = {
       $addToSet: {
-        sharedWith: {
-          user: userId,
-          role: role
-        }
+        permissionWith: permissionObj
       }
     }
     const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj)
@@ -236,17 +234,15 @@ exports.addRole = async (folderId, role, userId) => {
     throw error;
   }
 }
-exports.removeRole = async (folderId, role, userId) => {
+exports.revokePermission = async (folderId, permissionObj, owner) => {
   try {
     const findObj = {
-      _id: folderId
+      _id: folderId,
+      owner: owner
     }
     const changeObj = {
       $pull: {
-        sharedWith: {
-          user: userId,
-          role: role
-        }
+        permissionWith: permissionObj
       }
     }
     const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj)

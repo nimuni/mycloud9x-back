@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const sharedWithSchema = require('./sharedWith')
+const permissionWithSchema = require('./permissionWith')
 const { Schema } = mongoose;
 
 const driveFileSchema = new Schema({
@@ -28,7 +28,7 @@ const driveFileSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'File',
   },
-  sharedWith: [sharedWithSchema]
+  permissionWith: [permissionWithSchema]
 },
 {
   timestamps: true,
