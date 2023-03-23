@@ -3,37 +3,37 @@ const jwt = require('jsonwebtoken');
 exports.generateAccessToken = (user) => {
   // jwt.sign(payload, secretKey, options)
   // return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
-  return jwt.sign({data:user}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
-}
+  return jwt.sign({ data: user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+};
 exports.generateRefreshToken = (user) => {
   // jwt.sign(payload, secretKey, options)
   // return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-  return jwt.sign({data:user}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
-}
+  return jwt.sign({ data: user }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+};
 exports.accessTokenVerify = (token) => {
   return new Promise((resolve, reject) => {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
       if (err) {
         console.error(err);
-        reject(false)
+        reject(false);
       } else {
-        resolve(decoded)
+        resolve(decoded);
       }
     });
-  })
-}
+  });
+};
 exports.refreshTokenVerify = (token) => {
   return new Promise((resolve, reject) => {
     jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
       if (err) {
         console.error(err);
-        reject(false)
+        reject(false);
       } else {
-        resolve(decoded)
+        resolve(decoded);
       }
     });
-  })
-}
+  });
+};
 
 // middleware
 exports.verifyJwt = async (req, res, next) => {
@@ -55,7 +55,7 @@ exports.verifyJwt = async (req, res, next) => {
     // access token이 만료된 경우
     if (error.name === 'TokenExpiredError') {
       const refreshToken = req.cookies.refreshToken;
-      
+
       if (!refreshToken) {
         return res.status(401).json({ message: 'Refresh token is required' });
       }
@@ -69,29 +69,29 @@ exports.verifyJwt = async (req, res, next) => {
           _id: decodedInfo.data._id,
           email: decodedInfo.data.email,
           email_verified: decodedInfo.data.email_verified,
-          role: decodedInfo.data.role
-        }
+          role: decodedInfo.data.role,
+        };
 
         // refresh token으로 새로운 access token과 refresh token 발행
-        const newAccessToken = this.generateAccessToken(userInfo)
-        const newRefreshToken = this.generateRefreshToken(userInfo)
+        const newAccessToken = this.generateAccessToken(userInfo);
+        const newRefreshToken = this.generateRefreshToken(userInfo);
 
         // 새로 발행된 토큰 쿠키에 저장
-        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict'/* https 사용하는 경우. secure:true */})
+        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict' /* https 사용하는 경우. secure:true */ });
 
         req.user = userInfo;
-        console.log("req.user")
-        console.log(req.user)
-        
+        console.log('req.user');
+        console.log(req.user);
+
         next();
       } catch (error) {
         // return res.status(401).json({ message: 'Invalid refresh token' });
-        return res.redirect(`/login`)
+        return res.redirect(`/login`);
       }
     } else {
-      console.log(error.name)
-      console.log(error)
+      console.log(error.name);
+      console.log(error);
       return res.status(401).json({ message: 'Invalid access token' });
     }
   }
-}
+};

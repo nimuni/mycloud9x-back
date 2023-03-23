@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.getContents = async (type, data) => {
-  console.log("call getContents")
+  console.log('call getContents');
   const findIdDiv = `
 <div style='border:1px solid #c8c8c8; padding:5px;'>
   <p style='color:black'>mycloud9x 서비스의 ID를 찾기 위한 이메일 입니다.</p>
@@ -23,7 +23,7 @@ exports.getContents = async (type, data) => {
   <h2>${data.id}</h2>
   <br>
   <p style='color:red; font-size:8pt;'>본 메일은 발신전용입니다.</p>
-</div>`
+</div>`;
   const findPwdDiv = `
 <div style='border:1px solid #c8c8c8; padding:5px;'>
   <p style='color:black'>mycloud9x 서비스의 비밀번호 재설정 이메일 입니다.</p>
@@ -31,7 +31,7 @@ exports.getContents = async (type, data) => {
   <h2>${data.password}</h2>
   <br>
   <p style='color:red; font-size:8pt;'>본 메일은 발신전용입니다.</p>
-</div>`
+</div>`;
   const verifyEmail = `
 <div style='border:1px solid #c8c8c8; padding:5px;'>
   <p style='color:black'>mycloud9x 서비스의 이메일 인증을 위한 메일입니다..</p>
@@ -43,22 +43,22 @@ exports.getContents = async (type, data) => {
   <br>
   <p style='color:red; font-size:8pt;'>본 메일은 발신전용입니다.</p>
 </div>  
-  `
+  `;
 
   switch (type) {
-    case "id":
+    case 'id':
       return findIdDiv;
-    case "pwd":
+    case 'pwd':
       return findPwdDiv;
-    case "verifyEmail":
+    case 'verifyEmail':
       return verifyEmail;
     default:
-      return ``
+      return ``;
   }
-}
+};
 
 exports.sendMail = async (email, contents) => {
-  console.log("call sendMail")
+  console.log('call sendMail');
   let info = await transporter.sendMail({
     from: `mycloud9x`,
     to: email,
@@ -68,6 +68,4 @@ exports.sendMail = async (email, contents) => {
 
   console.log('Message sent: %s', info.messageId);
   return true;
-}
-
-
+};

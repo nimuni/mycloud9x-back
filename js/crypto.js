@@ -1,8 +1,8 @@
-const CryptoJS = require("crypto-js");
+const CryptoJS = require('crypto-js');
 
 exports.encrypt = (data) => {
   return CryptoJS.AES.encrypt(JSON.stringify(data), process.env.CRYPTO_KEY).toString();
-}
+};
 
 exports.decrypt = (text) => {
   try {
@@ -10,6 +10,6 @@ exports.decrypt = (text) => {
     return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
   } catch (error) {
     console.error(error);
-    return ;
+    return;
   }
-}
+};

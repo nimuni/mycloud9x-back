@@ -7,8 +7,8 @@ const path = require('path');
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/graphLookup/#mongodb-pipeline-pipe.-graphLookup
 exports.getRelativePath = async (currentFolderId, owner) => {
   try {
-    console.log("call getRelativePath")
-    console.log(currentFolderId)
+    console.log('call getRelativePath');
+    console.log(currentFolderId);
 
     // 1번방법
     // const pipeline = [
@@ -63,43 +63,43 @@ exports.getRelativePath = async (currentFolderId, owner) => {
     let currentId = currentFolderId;
     let tempParentFolderId = null;
     let folderNameArray = [];
-    while(tempParentFolderId != "root"){
-      let folderInfo = await driveFolderImpl.findOne({_id:currentId})
+    while (tempParentFolderId != 'root') {
+      let folderInfo = await driveFolderImpl.findOne({ _id: currentId });
       currentId = folderInfo.parentFolderId;
       folderNameArray.push(folderInfo.name);
       tempParentFolderId = folderInfo.parentFolderId;
     }
     folderNameArray.reverse();
-    let resultPath = "\\";
-    folderNameArray.forEach(element => {
-      resultPath = path.join(resultPath, element)
+    let resultPath = '\\';
+    folderNameArray.forEach((element) => {
+      resultPath = path.join(resultPath, element);
     });
-    
+
     return resultPath;
   } catch (error) {
-    console.log(error)
-    throw error
+    console.log(error);
+    throw error;
   }
-}
+};
 exports.getChildFolderIds = async (currentFolderId, owner) => {
   try {
     const findObj = {
-      owner: owner
-    }
+      owner: owner,
+    };
     // DB쿼리 1회
     const allFolderArray = await driveFolderImpl.findAll(findObj);
 
     // 검색 결과 자식들의 FolderId를 입력하는 변수
     let searchIds = [];
-    searchIds.push(currentFolderId)
+    searchIds.push(currentFolderId);
 
     // 검색결과 나타난 임시 자식Array
     let resultFolders = [];
 
     do {
       // 현재 검색용 IDs array의 0번아이디 검색
-      let tempFolders = allFolderArray.filter(element => element.parentFolderId == searchIds[0])
-      let tempFildersId = tempFolders.map(element => element._id);
+      let tempFolders = allFolderArray.filter((element) => element.parentFolderId == searchIds[0]);
+      let tempFildersId = tempFolders.map((element) => element._id);
       searchIds.push(...tempFildersId);
 
       // 찾은 폴더의 결과물들을 추가.
@@ -109,146 +109,146 @@ exports.getChildFolderIds = async (currentFolderId, owner) => {
       searchIds.splice(0, 1);
     } while (searchIds.length > 0);
 
-    console.log("getChildFolderIds result")
-    console.log(searchIds)
-    console.log(resultFolders)
+    console.log('getChildFolderIds result');
+    console.log(searchIds);
+    console.log(resultFolders);
 
-    return resultFolders.map(e => e._id);
+    return resultFolders.map((e) => e._id);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};
 exports.mkdir = async (folderName, parentFolderId, userId) => {
   try {
     const folderObj = {
       name: folderName,
-      parentFolderId: parentFolderId == "root" ? "root" : parentFolderId,
-      owner: userId
-    }
+      parentFolderId: parentFolderId == 'root' ? 'root' : parentFolderId,
+      owner: userId,
+    };
     return await driveFolderImpl.insertOne(folderObj);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};
 exports.readDirInfo = async (findObj) => {
   try {
     const folder = await driveFolderImpl.findOne(findObj);
-    return folder
+    return folder;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};
 exports.readDir = async (findObj) => {
   try {
-    console.log("call readDir in driveFolderService")
-    console.log(findObj)
+    console.log('call readDir in driveFolderService');
+    console.log(findObj);
     const files = await driveFileImpl.findAll(findObj);
     const folders = await driveFolderImpl.findAll(findObj);
     return {
       files: files,
-      folders: folders
-    }
+      folders: folders,
+    };
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};
 exports.mvdir = async (folderId, parentFolderId) => {
   try {
     const findFolderObj = {
-      _id: folderId
-    }
+      _id: folderId,
+    };
     const changeFolderObj = {
-      parentFolderId: parentFolderId == "root" ? "root" : parentFolderId
-    }
-    const folder = await driveFolderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
+      parentFolderId: parentFolderId == 'root' ? 'root' : parentFolderId,
+    };
+    const folder = await driveFolderImpl.findOneAndUpdate(findFolderObj, changeFolderObj);
     return folder;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};
 exports.modifyDir = async (folderId, _changeFolderObj) => {
   try {
     const findFolderObj = {
-      _id: folderId
-    }
-    let changeFolderObj = {}
-    if(_changeFolderObj.name) changeFolderObj.name = _changeFolderObj.name
-    if(_changeFolderObj.parentFolderId) changeFolderObj.parentFolderId = _changeFolderObj.parentFolderId
-   
-    const folder = await driveFolderImpl.findOneAndUpdate(findFolderObj, changeFolderObj)
+      _id: folderId,
+    };
+    let changeFolderObj = {};
+    if (_changeFolderObj.name) changeFolderObj.name = _changeFolderObj.name;
+    if (_changeFolderObj.parentFolderId) changeFolderObj.parentFolderId = _changeFolderObj.parentFolderId;
+
+    const folder = await driveFolderImpl.findOneAndUpdate(findFolderObj, changeFolderObj);
     return folder;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};
 exports.removeDir = async (folderId) => {
   // TODO. 한번에 여러개의 dir를 모두 삭제할 수 있게 해야함.
   // 현재는 하부에 dir이 없는 경우에만 파일 포함해서 모두 삭제.
   try {
     const findFolderObj = {
-      _id: folderId
-    }
+      _id: folderId,
+    };
     const findFoldersObj = {
-      parentFolderId: folderId
-    }
+      parentFolderId: folderId,
+    };
     const findFilesObj = {
-      parentFolderId: folderId
-    }
+      parentFolderId: folderId,
+    };
     const folders = await driveFolderImpl.findAll(findFoldersObj);
-    if(folders.length > 0){
+    if (folders.length > 0) {
       return false;
     } else {
       const deletedFileCount = await driveFileImpl.deleteMany(findFilesObj);
       const folder = await driveFolderImpl.findOneAndDelete(findFolderObj);
-      console.log("삭제처리 완료")
-      console.log(deletedFileCount)
-      console.log(folder)
-      return true
+      console.log('삭제처리 완료');
+      console.log(deletedFileCount);
+      console.log(folder);
+      return true;
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};
 exports.grantPermission = async (folderId, permissionObj, owner) => {
   try {
     const findObj = {
       _id: folderId,
-      owner: owner
-    }
+      owner: owner,
+    };
     const changeObj = {
       $addToSet: {
-        permissionWith: permissionObj
-      }
-    }
-    const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj)
+        permissionWith: permissionObj,
+      },
+    };
+    const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj);
     return folder;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};
 exports.revokePermission = async (folderId, permissionObj, owner) => {
   try {
     const findObj = {
       _id: folderId,
-      owner: owner
-    }
+      owner: owner,
+    };
     const changeObj = {
       $pull: {
-        permissionWith: permissionObj
-      }
-    }
-    const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj)
+        permissionWith: permissionObj,
+      },
+    };
+    const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj);
     return folder;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
-}
+};

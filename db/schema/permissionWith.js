@@ -5,14 +5,14 @@ const permissionWithSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   role: {
     type: String,
     enum: ['editor', 'viewer'],
-    required: true
+    required: true,
   },
-  endDate: Date
+  endDate: Date,
 });
 
 module.exports = permissionWithSchema;

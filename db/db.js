@@ -3,16 +3,20 @@ mongoose.set('strictQuery', false);
 
 const connect = () => {
   // 몽구스와 몽고디비 연결하는 부분
-  mongoose.connect(process.env.MONGO_ATLAS_URI, {
-    dbName: 'mycloud9x',
-    useNewUrlParser: true,
-  }, (error) => {
-    if (error) {
-      console.log('몽고디비 연결 에러', error);
-    } else {
-      console.log('몽고디비 연결 성공');
+  mongoose.connect(
+    process.env.MONGO_ATLAS_URI,
+    {
+      dbName: 'mycloud9x',
+      useNewUrlParser: true,
+    },
+    (error) => {
+      if (error) {
+        console.log('몽고디비 연결 에러', error);
+      } else {
+        console.log('몽고디비 연결 성공');
+      }
     }
-  });
+  );
 };
 
 mongoose.connection.on('error', (error) => {
