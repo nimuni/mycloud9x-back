@@ -24,7 +24,7 @@ router.post('/upload', async (req, res, next) => {
 router.get('/download/:_id', async (req, res, next) => {
   try {
     const { _id } = req.params;
-    const filePath = await fileService.getFileData(_id);
+    const filePath = await fileService.getFilePath(_id);
     res.download(filePath);
   } catch (error) {
     console.error(error);

@@ -26,28 +26,31 @@ exports.upload = async (files) => {
     const fileName = `${fileUUID}${path.extname(file.name)}`;
 
     // 파일 저장
-    const currentPath = path.join(this.getUploadablePath(), fileName);
-    await file.mv(currentPath);
+    const folderPath = this.getUploadablePath()
+    const filePath = path.join(folderPath, fileName);
+    await file.mv(filePath);
 
     // 파일 정보 저장
     const savedFileData = await fileImpl.insertOne({
       name: file.name,
       uuid: fileUUID,
       mimetype: file.mimetype,
+      extention: path.extname(file.name),
       size: file.size,
-      currentPath: currentPath,
+      currentPath: folderPath,
     });
     // filesInfo.push(savedFileData._id.toString())
     filesInfo.push(savedFileData);
   }
   return filesInfo;
 };
-exports.getFileData = async (fileId) => {
+exports.getFilePath = async (fileId) => {
   const fileData = await fileImpl.findOne({ _id: fileId });
   if (!fileData) {
     throw new Error('File not found');
   }
-  const filePath = fileData.currentPath;
+  const fileName = `${fileData.name}${fileData.extention}`;
+  const filePath = path.join(fileData.currentPath, fileName);
   return filePath;
   // return {
   //   filePath: filePath,
@@ -56,8 +59,8 @@ exports.getFileData = async (fileId) => {
 };
 exports.removeFile = async (fileId) => {
   try {
-    const fileInfo = await this.getFileData(fileId);
-    fs.unlinkSync(fileInfo.currentPath);
+    const filePath = await this.getFilePath(fileId);
+    fs.unlinkSync(filePath);
     return true;
   } catch (error) {
     console.log(error);

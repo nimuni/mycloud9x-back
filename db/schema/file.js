@@ -15,6 +15,10 @@ const fileSchema = new Schema(
       type: String,
       required: true,
     },
+    extention: {
+      type: String,
+      required: true,
+    },
     size: {
       type: Number,
       required: true,
