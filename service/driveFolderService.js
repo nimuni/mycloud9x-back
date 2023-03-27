@@ -3,85 +3,81 @@ const driveFileImpl = require('./impl/driveFileServiceImpl');
 const util = require('../js/common.util');
 const path = require('path');
 
-// 현재 경로 가져오기. 상위폴더들까지.
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/graphLookup/#mongodb-pipeline-pipe.-graphLookup
+// 현재 경로 객체 가져오기.
 exports.getRelativePath = async (currentFolderId, owner) => {
   try {
-    console.log('call getRelativePath');
-    console.log(currentFolderId);
+    const findObj = {
+      owner: owner,
+    };
 
-    // 1번방법
-    // const pipeline = [
-    //   // 현재 폴더를 조회하기 위한 match stage
-    //   // { $match: { _id: ObjectId(currentFolderId) }},
-    //   { $match: { owner: ObjectId(owner) }},
+    // DB쿼리 1회 - 한 사람이 가지는 folder의 수가 적기때문에, 해당 사람의 모든폴더 한번에 조회
+    const allFolderArray = await driveFolderImpl.findAll(findObj);
 
-    //   // 필요한 필드만을 선택하기 위한 project stage
-    //   { $project: { _id: 1, parentFolderId: 1, name: 1 }},
+    // 검색할 FolderId를 저장하는 변수
+    let searchIds = [];
+    searchIds.push(currentFolderId);
 
-    //   // 최상위 폴더까지 상위 폴더를 조회하기 위한 graphLookup stage
-    //   {
-    //     $graphLookup: {
-    //       from: "drivefolders",
-    //       startWith: "$parentFolderId",
-    //       connectFromField: "parentFolderId",
-    //       connectToField: "_id",
-    //       as: "parentFolders",
-    //       maxDepth: 100,
-    //       restrictSearchWithMatch: { parentFolderId: { $eq: "root" } }
-    //     }
-    //   },
-    // ];
-    // let result = await folderImpl.pipeline(pipeline);
+    // 검색결과 나타난 Array
+    let resultFolders = [];
 
-    // 2번방법
-    // const pipeline = [
-    //   // 현재 폴더부터 상위 폴더까지 조회하기 위한 unwind stage
-    //   { $match: { owner: ObjectId(owner) }},
-    //   {
-    //     $graphLookup: {
-    //       from: "drivefolders",
-    //       startWith: "$parentFolderId",
-    //       connectFromField: "parentFolderId",
-    //       connectToField: "_id",
-    //       as: "parentFolders",
-    //       maxDepth: 100,
-    //       restrictSearchWithMatch: { parentFolderId: { $eq: "root" } }
-    //     }
-    //   },
-    //   // 결과를 역순으로 정렬하여 현재 폴더부터 시작하도록 함
-    //   { $sort: { "parentFolders.depth": 1 } },
-    //   // 필요한 필드만을 선택하기 위한 project stage
-    //   // { $project: { _id: 1, parentFolderId: 1, name: 1, depth: { $size: "$parentFolders" } } }
-    // ];
-    // let result = await folderImpl.pipeline(pipeline);
-    // console.log("pipeline result=")
-    // console.log(result)
+    while(searchIds.length > 0){
+      let foundFolder = allFolderArray.find((element) => element._id == searchIds[0]);
+      console.log(foundFolder)
 
-    // 3번방법
-    // 주먹구구식. TODO 추후 바꿔야함.
-    let currentId = currentFolderId;
-    let tempParentFolderId = null;
-    let folderNameArray = [];
-    while (tempParentFolderId != 'root') {
-      let folderInfo = await driveFolderImpl.findOne({ _id: currentId });
-      currentId = folderInfo.parentFolderId;
-      folderNameArray.push(folderInfo.name);
-      tempParentFolderId = folderInfo.parentFolderId;
+      if(foundFolder.parentFolderId != "root") {
+        searchIds.push(foundFolder.parentFolderId);
+      }
+      // resultFolders.push(foundFolder)
+      resultFolders.splice(0, 0, foundFolder) // push는 뒤에되기 때문에 splice로 앞에 입력
+      
+      // 검색완료된 0번째 요소 제거
+      searchIds.splice(0, 1);
     }
-    folderNameArray.reverse();
-    let resultPath = '\\';
-    folderNameArray.forEach((element) => {
-      resultPath = path.join(resultPath, element);
-    });
 
-    return resultPath;
+    console.log('getRelativePath result');
+    let result = resultFolders.map((e) => {
+      return {
+        _id: e._id,
+        name: e.name,
+        parentFolderId: e.parentFolderId,
+        owner: e.owner
+      }
+    })
+
+    return result;
   } catch (error) {
     console.log(error);
     throw error;
   }
 };
-exports.getChildFolderIds = async (currentFolderId, owner) => {
+// 현재 폴더 아이디의 자식폴더 객체 어레이를 가져오기
+exports.childFolders = async (currentFolderId, owner) => {
+  try {
+    const findObj = {
+      owner: owner,
+      parentFolderId: currentFolderId
+    };
+
+    // DB쿼리 1회 - 한 사람이 가지는 folder의 수가 적기때문에, 해당 사람의 모든폴더 한번에 조회
+    const allFolderArray = await driveFolderImpl.findAll(findObj);
+
+    console.log('getRelativePath result');
+    let result = allFolderArray.map((e) => {
+      return {
+        _id: e._id,
+        name: e.name,
+        parentFolderId: e.parentFolderId,
+        owner: e.owner
+      }
+    })
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+exports.getDescendantFolderIds = async (currentFolderId, owner) => {
   try {
     const findObj = {
       owner: owner,
@@ -109,7 +105,7 @@ exports.getChildFolderIds = async (currentFolderId, owner) => {
       searchIds.splice(0, 1);
     } while (searchIds.length > 0);
 
-    console.log('getChildFolderIds result');
+    console.log('getDescendantFolderIds result');
     console.log(searchIds);
     console.log(resultFolders);
 
@@ -218,6 +214,7 @@ exports.removeDir = async (folderId) => {
 };
 exports.grantPermission = async (folderId, permissionObj, owner) => {
   try {
+    // TODO. grant 존재해도 추가로 생성됨.
     const findObj = {
       _id: folderId,
       owner: owner,
@@ -225,7 +222,7 @@ exports.grantPermission = async (folderId, permissionObj, owner) => {
     const changeObj = {
       $addToSet: {
         permissionWith: permissionObj,
-      },
+      }
     };
     const folder = await driveFolderImpl.findOneAndUpdate(findObj, changeObj);
     return folder;
