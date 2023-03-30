@@ -212,6 +212,22 @@ exports.removeDir = async (folderId) => {
     throw error;
   }
 };
+exports.deleteMany = async (folderIdsArray, owner) => {
+  try {
+    console.log("call deleteMany")
+    const findObj = {
+      parentFolderId: { $in: folderIdsArray },
+      owner: owner,
+    };
+    const folders = await driveFolderImpl.deleteMany(findObj);
+    console.log("folders deletedCount");
+    console.log(folders.deletedCount);
+    return folders.deletedCount;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 exports.grantPermission = async (folderId, permissionObj, owner) => {
   try {
     // TODO. grant 존재해도 추가로 생성됨.

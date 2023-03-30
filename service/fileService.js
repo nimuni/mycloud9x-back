@@ -44,12 +44,19 @@ exports.upload = async (files) => {
   }
   return filesInfo;
 };
+exports.getFile = async (fileId) => {
+  const fileData = await fileImpl.findOne({ _id: fileId });
+  if (!fileData) {
+    throw new Error('File not found');
+  }
+  return fileData;
+};
 exports.getFilePath = async (fileId) => {
   const fileData = await fileImpl.findOne({ _id: fileId });
   if (!fileData) {
     throw new Error('File not found');
   }
-  const fileName = `${fileData.name}${fileData.extention}`;
+  const fileName = `${fileData.name}`;
   const filePath = path.join(fileData.currentPath, fileName);
   return filePath;
   // return {

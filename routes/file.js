@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const path = require('path');
 const fileService = require('../service/fileService');
 
 // 기본업로드. 드라이브를 이용해서 올리는 것 말고,
@@ -24,8 +25,11 @@ router.post('/upload', async (req, res, next) => {
 router.get('/download/:_id', async (req, res, next) => {
   try {
     const { _id } = req.params;
-    const filePath = await fileService.getFilePath(_id);
-    res.download(filePath);
+    const fileData = await fileService.getFile(_id);
+    console.log(fileData)
+    const filePath = path.join(fileData.currentPath, fileData.uuid + fileData.extention);
+    console.log(filePath)
+    res.download(filePath, fileData.name);
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');

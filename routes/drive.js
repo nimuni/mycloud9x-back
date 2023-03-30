@@ -120,6 +120,8 @@ router.put('/folder/grantPermission/:folderId', verifyJwt, async (req, res, next
     console.log(permissionObj)
     console.log(req.user)
 
+    // TODO. 임시로 기존권한 삭제 후 부여. upsert기능 찾아봐야함. 현재 중복으로 입력되는 문제가 있음
+    const modifiedFolderRevoke = await driveFolderService.revokePermission(req.params.folderId, permissionObj, req.user._id);
     const modifiedFolder = await driveFolderService.grantPermission(req.params.folderId, permissionObj, req.user._id);
     res.send(modifiedFolder);
   } catch (error) {
@@ -145,10 +147,11 @@ router.put('/folder/revokePermission/:folderId', verifyJwt, async (req, res, nex
   }
 });
 // 해당 폴더 삭제.
-router.delete('/folder/:_id', async (req, res, next) => {
+router.delete('/folder/:_id', verifyJwt, async (req, res, next) => {
   try {
     // 전송된 폴더경로 및 폴더명으로 폴더 삭제.
     // 삭제시 하위파일 존재하면 하위파일까지 전부 날려야함.
+    console.log("call delete /folder/:_id")
     let folderIds = [];
     const owner = req.user._id;
     const currentFolderInfo = await driveFolderService.readDirInfo({ _id: req.params._id });
@@ -157,14 +160,14 @@ router.delete('/folder/:_id', async (req, res, next) => {
     folderIds.push(...childFolderIds);
 
     // 해당 폴더IDs를 상위로 가지고있는 파일 및 폴더 삭제
-    const deleteFileResult = await driveFileService.deleteManyFromFolder(folderIds, owner);
+    const deleteFileResult = await driveFileService.deleteManyFromFolderIds(folderIds, owner);
     const deleteFolderResult = await driveFolderService.deleteMany(folderIds, owner);
-    console.log(deleteFileResult);
-    console.log(deleteFolderResult);
-    let deleteResult = deleteFileResult.length + deleteFolderResult.length;
-    console.log(deleteResult);
-    if (deleteResult) {
-      res.status(204).send();
+    let deleteResult = deleteFileResult + deleteFolderResult;
+
+    // 현재폴더 삭제
+    const removeFolder = await driveFolderService.removeDir({ _id: req.params._id })
+    if (removeFolder) {
+      res.status(204).send(removeFolder);
     } else {
       res.status(400).send();
     }
@@ -181,6 +184,7 @@ router.delete('/folder/:_id', async (req, res, next) => {
 // 해당 폴더ID를 부모로가지게 파일들 업로드
 router.post('/uploadFiles/:folderId', verifyJwt, async (req, res, next) => {
   try {
+    console.log("call post /uploadFiles/:folderId")
     if (!req.files) {
       return res.status(400).json({ message: 'No files were uploaded' });
     }
@@ -191,6 +195,8 @@ router.post('/uploadFiles/:folderId', verifyJwt, async (req, res, next) => {
 
     // 업로드 다운로드시 유저 로그인 체크하고 확인되면 진행.
     const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
+    console.log("files")
+    console.log(files)
     const uploadedFileInfoArray = await driveFileService.uploadDriveFiles(req.params.folderId, files, req.user._id);
 
     res.send(`${uploadedFileInfoArray.length} uploaded success`);
@@ -200,7 +206,7 @@ router.post('/uploadFiles/:folderId', verifyJwt, async (req, res, next) => {
   }
 });
 // driveFile의 id를 기반으로, 해당 파일의 정보 조회
-router.get('/file/:fileId', async (req, res, next) => {
+router.get('/file/:fileId', verifyJwt, async (req, res, next) => {
   try {
     // 해당 경로의 파일 정보를 리턴
     const foundFile = await driveFileService.findOne(req.params.fileId, req.user._id);
@@ -211,7 +217,7 @@ router.get('/file/:fileId', async (req, res, next) => {
   }
 });
 // driveFile의 id를 기반으로, 파일명 변경, 파일 이동
-router.put('/file/:fileId', async (req, res, next) => {
+router.put('/file/:fileId', verifyJwt, async (req, res, next) => {
   try {
     // 파일을 이동하거나 이름 변경만 가능
     const { name, parentFolderId } = req.body;
@@ -264,7 +270,7 @@ router.put('/file/revokePermission/:fileId', verifyJwt, async (req, res, next) =
   }
 });
 // driveFile의 id를 기반으로 파일 삭제
-router.delete('/file/fileId/:fileId', async (req, res, next) => {
+router.delete('/file/fileId/:fileId', verifyJwt, async (req, res, next) => {
   try {
     // 파일 ID를 받아서 해당 파일을 삭제시킴
     const deletedFile = await driveFileService.delete(req.params.fileId, req.user._id);
@@ -274,7 +280,7 @@ router.delete('/file/fileId/:fileId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
-router.delete('/file/folderIds', async (req, res, next) => {
+router.delete('/file/folderIds', verifyJwt, async (req, res, next) => {
   try {
     // 파일 ID를 받아서 해당 파일을 삭제시킴
     const deletedFile = await driveFileService.delete(req.params.fileId, req.user._id);
@@ -292,7 +298,7 @@ router.delete('/file/folderIds', async (req, res, next) => {
 //////////////////////////////
 // 파일공유
 //////////////////////////////
-router.post('/shareFile/:fildId', async (req, res, next) => {
+router.post('/shareFile/:fildId', verifyJwt, async (req, res, next) => {
   try {
     // 파일 및 사용자 정보를 받아서
     // req.params.fildId
@@ -308,7 +314,7 @@ router.post('/shareFile/:fildId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
-router.get('/shareFile/:fileId', async (req, res, next) => {
+router.get('/shareFile/:fileId', verifyJwt, async (req, res, next) => {
   try {
     // 인자값으로 생성된 문자열을 통해서 임시파일 다운로드
     // DB에 문자열을 읽어와서 해당 경로의 파일 전송
@@ -318,7 +324,7 @@ router.get('/shareFile/:fileId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
-router.put('/shareFile/:fileId', async (req, res, next) => {
+router.put('/shareFile/:fileId', verifyJwt, async (req, res, next) => {
   try {
     // 인자값으로 생성된 문자열을 통해서 임시파일 기간 수정
     // jwt 등 로그인된 정보를 기반하여 수정여부 결정
@@ -328,7 +334,7 @@ router.put('/shareFile/:fileId', async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
-router.delete('/shareFile/:fileId', async (req, res, next) => {
+router.delete('/shareFile/:fileId', verifyJwt, async (req, res, next) => {
   try {
     // 인자값으로 생성된 문자열을 통해서 임시파일 공유 취소
     // 실제 파일 및 임시경로는 삭제하지 않으나, 사용할 수 없게 사용여부 N으로 설정

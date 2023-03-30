@@ -5,8 +5,11 @@ const path = require('path');
 
 exports.uploadDriveFiles = async (folderId, files, owner) => {
   try {
+    console.log("call uploadDriveFiles in driveFileService")
     // 파일들을 업로드한 후
     const uploadfileArray = await fileService.upload(files);
+    console.log("uploadfileArray")
+    console.log(uploadfileArray)
     // 업로드된 파일들의 정보를 기반으로, driveFile 정보를 DB에 입력
     const driveFileArray = uploadfileArray.map((element) => {
       return {
@@ -18,6 +21,8 @@ exports.uploadDriveFiles = async (folderId, files, owner) => {
         savedFileId: element._id,
       };
     });
+    console.log("driveFileArray")
+    console.log(driveFileArray)
     const uploadedFileInfoArray = await driveFileImpl.insertMany(driveFileArray);
     return uploadedFileInfoArray;
   } catch (error) {
@@ -72,21 +77,28 @@ exports.delete = async (fileId, owner) => {
 };
 exports.deleteManyFromFolderIds = async (folderIdsArray, owner) => {
   try {
+    console.log("call deleteManyFromFolderIds")
     const findObj = {
       parentFolderId: { $in: folderIdsArray },
       owner: owner,
     };
     const foundFiles = await driveFileImpl.findAll(findObj);
     const files = await driveFileImpl.deleteMany(findObj);
+    console.log("foundFiles");
     console.log(foundFiles);
-    console.log(files);
+    console.log("files deletedCount");
+    console.log(files.deletedCount);
     const savedFileIdArray = foundFiles.map((e) => e.savedFileId);
+    console.log("savedFileIdArray");
     console.log(savedFileIdArray);
     const result = await fileService.removeFiles(savedFileIdArray);
     // TODO. delete 실제파일 여러개
-    console.log(result);
-    return result;
+    console.log("result.length");
+    console.log(result.length);
+    console.log(result.length + files.deletedCount);
+    return result.length + files.deletedCount;
   } catch (error) {
+    console.log("in error")
     console.log(error);
     throw error;
   }
