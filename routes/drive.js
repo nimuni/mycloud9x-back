@@ -1,9 +1,77 @@
 const router = require('express').Router();
 const fileService = require('../service/fileService');
+const driveRootService = require('../service/driveRootService');
 const driveFileService = require('../service/driveFileService');
 const driveFolderService = require('../service/driveFolderService');
 const { verifyJwt } = require('../js/jwt');
 const { fileNameFilter } = require('../js/common.util');
+
+//////////////////////////////
+// 관리자 폴더 작업
+//////////////////////////////
+// 설정할 폴더 위치 조회(서버 내 폴더 및 파일목록 조회)
+router.get('/root/serverFolderPath/:path', /* verifyJwt, */ async (req, res, next) => {
+  try {
+    console.log("call /root/serverFolderPath/:path")
+    const path = req.params.path == ":path" ? undefined : req.params.path;
+    console.log(path)
+    const result = await driveRootService.getServerPath(path);
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+// 설정된 루트 폴더들 정보 조회 - 사용용량, 총용량, 이름, 위치
+router.get('/root/allRootFolder', verifyJwt, async (req, res, next) => {
+  try {
+    
+    res.send(123);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+router.get('/root/rootFolder/:_id', verifyJwt, async (req, res, next) => {
+  try {
+    
+    res.send(123);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+// 루트 폴더 총 용량, 사용량, 별명, 폴더위치 입력
+router.post('/root/rootFolder', verifyJwt, async (req, res, next) => {
+  try {
+    
+    res.send(123);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+// 루트 폴더 총 용량, 사용량, 별명, 폴더위치 수정
+router.put('/root/rootFolder/:_id', verifyJwt, async (req, res, next) => {
+  try {
+    
+    res.send(123);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+// 루트 폴더 삭제(내부에 파일이 없을때에만)
+router.delete('/root/rootFolder/:_id', verifyJwt, async (req, res, next) => {
+  try {
+    
+    res.send(123);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 
 //////////////////////////////
 // 폴더 처리
