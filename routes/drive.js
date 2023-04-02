@@ -22,6 +22,18 @@ router.get('/root/serverFolderPath/:path', /* verifyJwt, */ async (req, res, nex
     res.status(500).json({ message: error.message });
   }
 });
+router.get('/root/driveInfo/:path', /* verifyJwt, */ async (req, res, next) => {
+  try {
+    console.log("call /root/driveInfo/:path")
+    const path = req.params.path == ":path" ? undefined : req.params.path;
+    console.log(path)
+    const result = await driveRootService.getDriveInfo(path);
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
 // 설정된 루트 폴더들 정보 조회 - 사용용량, 총용량, 이름, 위치
 router.get('/root/allRootFolder', verifyJwt, async (req, res, next) => {
   try {
