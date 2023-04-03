@@ -34,50 +34,73 @@ router.get('/root/driveInfo/:path', /* verifyJwt, */ async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
-// 설정된 루트 폴더들 정보 조회 - 사용용량, 총용량, 이름, 위치
-router.get('/root/allRootFolder', verifyJwt, async (req, res, next) => {
+router.post('/root/makeFolder/:path', /* verifyJwt, */ async (req, res, next) => {
   try {
-    
-    res.send(123);
+    console.log("call /root/makeFolder/:path")
+    const path = req.params.path == ":path" ? undefined : req.params.path;
+    console.log(path)
+    await driveRootService.mkdir(path);
+    res.status(201).send();
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
   }
 });
-router.get('/root/rootFolder/:_id', verifyJwt, async (req, res, next) => {
+// 설정된 루트 폴더들 정보 조회 - 사용용량, 총용량, 이름, 위치
+router.get('/root/allRootFolder', verifyJwt, async (req, res, next) => {
   try {
-    
-    res.send(123);
+    const driveRoots = await driveRootService.getAllDriveRoot()
+    res.send(driveRoots);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+router.get('/root/driveRoot/:_id', verifyJwt, async (req, res, next) => {
+  try {
+    const driveRoot = await driveRootService.getDriveRoot(req.params._id)
+    res.send(driveRoot);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
   }
 });
 // 루트 폴더 총 용량, 사용량, 별명, 폴더위치 입력
-router.post('/root/rootFolder', verifyJwt, async (req, res, next) => {
+router.post('/root/driveRoot', verifyJwt, async (req, res, next) => {
   try {
-    
-    res.send(123);
+    const driveRootObj = {
+      name: req.body.name,
+      path: req.body.path,
+      maximumSize: req.body.maximumSize
+    }
+    const driveRoot = await driveRootService.insertDriveRoot(driveRootObj)
+    res.send(driveRoot);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
   }
 });
-// 루트 폴더 총 용량, 사용량, 별명, 폴더위치 수정
-router.put('/root/rootFolder/:_id', verifyJwt, async (req, res, next) => {
+// 루트 폴더 총 용량, 별명, 폴더위치 수정
+router.put('/root/driveRoot/:_id', verifyJwt, async (req, res, next) => {
   try {
-    
-    res.send(123);
+    const changeObj = {
+      name: req.body.name,
+      path: req.body.path,
+      maximumSize: req.body.maximumSize
+    }
+
+    const driveRoot = await driveRootService.updateDriveRoot(req.params._id, changeObj)
+    res.send(driveRoot);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
   }
 });
 // 루트 폴더 삭제(내부에 파일이 없을때에만)
-router.delete('/root/rootFolder/:_id', verifyJwt, async (req, res, next) => {
+router.delete('/root/driveRoot/:_id', verifyJwt, async (req, res, next) => {
   try {
-    
-    res.send(123);
+    const driveRoot = await driveRootService.deleteDriveRoot(req.params._id)
+    res.send(driveRoot);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
