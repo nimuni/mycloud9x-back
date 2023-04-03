@@ -3,7 +3,6 @@ const util = require('../js/common.util');
 const path = require('path');
 const fs = require('fs');
 const nodeDiskInfo = require('node-disk-info');
-const checkDiskSpace = require('check-disk-space').default
 
 // 서버 파일시스템 폴더 패스 위치 조회
 exports.getServerPath = async (path=process.cwd()) => {
@@ -17,29 +16,33 @@ exports.getServerPath = async (path=process.cwd()) => {
   }
 };
 // 서버 파일시스템 드라이브 총 용량 조회
-// TODO. 드라이브 getDiskInfo 이용해서 통일하기.
-// 있는 Path에서 앞 문자 잘라서, 조회한 것에서 찾아서 리턴하기
 exports.getDriveInfo = async (drivePath) => {
-  let disks = [];
+  const driveInfoArray = await nodeDiskInfo.getDiskInfo();
   if(drivePath){
-    const infoDrive = await checkDiskSpace(drivePath)
-    disks.push({
-      ...infoDrive,
-      available: `${Math.floor(infoDrive.free / infoDrive.size * 100)}%`
-    });
-  } else {
-    let driveInfoArray = await nodeDiskInfo.getDiskInfo()
-    for (const drive of driveInfoArray) {
-      disks.push({
-        diskPath: drive.mounted,
-        free: drive.available,
-        size: drive.used + drive.available,
-        available: `${Math.floor(drive.available / (drive.used + drive.available) * 100)}%`
-      });
+    // 총 문자열 중 맨 앞 2글자 추출
+    const driveStr = drivePath.slice(0,2).toUpperCase();
+    const tempFilterDrive = driveInfoArray.filter(element => element.mounted == driveStr)
+    if(tempFilterDrive.length > 0){
+      const foundDrive = tempFilterDrive[0]
+      return [{
+        diskPath: foundDrive.mounted,
+        free: foundDrive.available,
+        size: foundDrive.used + foundDrive.available,
+        available: `${Math.floor(foundDrive.available / (foundDrive.used + foundDrive.available) * 100)}%`
+      }]
+    } else {
+      return []
     }
+  } else {
+    return driveInfoArray.map(element => {
+      return {
+        diskPath: element.mounted,
+        free: element.available,
+        size: element.used + element.available,
+        available: `${Math.floor(element.available / (element.used + element.available) * 100)}%`
+      }
+    })
   }
-  console.log(disks)
-  return disks
 }
 // 루트폴더 모두 조회
 exports.getAllRootFolder = async () => {
