@@ -44,6 +44,13 @@ exports.upload = async (files) => {
   }
   return filesInfo;
 };
+exports.getAllFile = async (searchObj) => {
+  const filesData = await fileImpl.findAll(searchObj);
+  if (!filesData) {
+    throw new Error('File not found');
+  }
+  return filesData;
+};
 exports.getFile = async (fileId) => {
   const fileData = await fileImpl.findOne({ _id: fileId });
   if (!fileData) {
@@ -63,6 +70,13 @@ exports.getFilePath = async (fileId) => {
   //   filePath: filePath,
   //   fileName: fileData.name
   // }
+};
+exports.updateFilePath = async (fileId, newFolderPath) => {
+  const fileData = await fileImpl.findOneAndUpdate({ _id: fileId }, {currentPath: newFolderPath});
+  if (!fileData) {
+    throw new Error('File not found');
+  }
+  return true;
 };
 exports.removeFile = async (fileId) => {
   try {
