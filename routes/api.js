@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const passport = require('passport');
-const { generateAccessToken, generateRefreshToken, verifyJwt } = require('../js/jwt');
+const { generateAccessToken, generateRefreshToken, verifyJwt, reGenerateAccessToken } = require('../js/jwt');
 
 // default api 설정
 router.get('/', function (req, res, next) {
@@ -22,8 +22,17 @@ router.post('/login', async (req, res, next) => {
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
 
+      // client에서 fetch를 이용해서 세팅된 헤더를 얻을 수 있음.
+      // fetch('/your-endpoint')
+      //   .then(response => {
+      //     const accessToken = response.headers.get('Authorization').split(' ')[1];
+      //     // accessToken 사용
+      //   })
+
       res.cookie('refreshToken', refreshToken, { httpOnly: true });
-      res.json({ accessToken: accessToken });
+      // res.json({ Authorization: `Bearer ${accessToken}` });
+      res.set('Authorization', `Bearer ${accessToken}`);
+      res.redirect(`/`);
     }
   })(req, res, next);
 });
@@ -31,6 +40,25 @@ router.post('/login', async (req, res, next) => {
 router.get('/verifyToken', verifyJwt, async (req, res, next) => {
   console.log('call /api/user/verifyToken');
   res.send('success token verify');
+});
+router.get('/reGenerateAccessToken', async (req, res, next) => {
+  console.log('call /api/user/reGenerateAccessToken');
+
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Refresh token is required' });
+  }
+  try {
+    const newAccessToken = reGenerateAccessToken(refreshToken);
+    res.set('Authorization', `Bearer ${newAccessToken}`);
+    res.status(201).send();
+    // res.json({ Authorization: `Bearer ${newAccessToken}` });
+  } catch (error) {
+    console.log("error in reGenerateAccessToken")
+    console.log(error)
+    res.redirect(`/login`);
+  }
+
 });
 router.get('/logout', verifyJwt, (req, res) => {
   res.clearCookie('refreshToken');
@@ -51,11 +79,9 @@ router.get('/auth/google/callback', passport.authenticate('google', { session: f
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
-  // cookie에 refreshToken과 accessToken을 설정.
+  res.set('Authorization', `Bearer ${accessToken}`);
   res.cookie('refreshToken', refreshToken, { httpOnly: true });
-  // res.json({ accessToken: accessToken });
-  res.cookie('accessToken', accessToken, { httpOnly: true });
-  res.redirect(`/`);
+  res.redirect('/');
 });
 
 // User api 설정

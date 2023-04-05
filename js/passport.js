@@ -82,7 +82,7 @@ module.exports = () => {
             email_verified: 1,
             role: 1,
           };
-          let exUser = await userServiceImpl.findOne({ id: profile.id }, projectionUserObj);
+          let exUser = await userServiceImpl.findOne({ email: profile.emails[0].value }, projectionUserObj);
           if (exUser) {
             // 이미가입된경우, provider가 google이면
             if (exUser.provider == 'google') {
