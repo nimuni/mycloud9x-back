@@ -1,0 +1,31 @@
+name: CI in Release Branch
+
+on:
+  push:
+    branches: [ release* ]
+  pull_request:
+    branches: [ release* ]
+      
+jobs:
+  gitPullJob:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: git pull and restart pm2 instance
+    - shell: bash
+    - run: |
+        cd /var/mycloud9x-back
+        git pull
+        npm install
+        
+  pm2RestartJob:
+    runs-on: ubuntu-22.04
+    
+    needs: gitPullJob
+    
+    steps:
+    - name: pm2 resetart instance
+    - shell: bash
+    - run: |
+        pm2 restart 0
+    
