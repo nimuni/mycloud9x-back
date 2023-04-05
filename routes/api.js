@@ -60,10 +60,6 @@ router.get('/reGenerateAccessToken', async (req, res, next) => {
   }
 
 });
-// router.post('/logout', verifyJwt, (req, res) => {
-//   res.clearCookie('refreshToken');
-//   res.sendStatus(204);
-// });
 router.get('/logout', verifyJwt, (req, res) => {
   res.clearCookie('refreshToken');
   res.redirect('/login');

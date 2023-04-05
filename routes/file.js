@@ -4,7 +4,7 @@ const fileService = require('../service/fileService');
 
 // 기본업로드. 드라이브를 이용해서 올리는 것 말고,
 // 서버에 프로필 이미지나 기타 자료를 업로드 할 때 사용.
-router.post('/upload', async (req, res, next) => {
+router.post('/upload', verifyJwt, async (req, res, next) => {
   try {
     if (!req.files) {
       return res.status(400).json({ message: 'No files were uploaded' });

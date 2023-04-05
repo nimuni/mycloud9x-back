@@ -10,7 +10,7 @@ const { fileNameFilter } = require('../js/common.util');
 // 관리자 폴더 작업
 //////////////////////////////
 // 설정할 폴더 위치 조회(서버 내 폴더 및 파일목록 조회)
-router.get('/root/serverFolderPath/:path', /* verifyJwt, */ async (req, res, next) => {
+router.get('/root/serverFolderPath/:path', verifyJwt, async (req, res, next) => {
   try {
     console.log("call /root/serverFolderPath/:path")
     const path = req.params.path == ":path" ? undefined : req.params.path;
@@ -22,7 +22,7 @@ router.get('/root/serverFolderPath/:path', /* verifyJwt, */ async (req, res, nex
     res.status(500).json({ message: error.message });
   }
 });
-router.get('/root/driveInfo/:path', /* verifyJwt, */ async (req, res, next) => {
+router.get('/root/driveInfo/:path', verifyJwt, async (req, res, next) => {
   try {
     console.log("call /root/driveInfo/:path")
     const path = req.params.path == ":path" ? undefined : req.params.path;
@@ -34,7 +34,7 @@ router.get('/root/driveInfo/:path', /* verifyJwt, */ async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 });
-router.post('/root/makeFolder/:path', /* verifyJwt, */ async (req, res, next) => {
+router.post('/root/makeFolder/:path', verifyJwt, async (req, res, next) => {
   try {
     console.log("call /root/makeFolder/:path")
     const path = req.params.path == ":path" ? undefined : req.params.path;
