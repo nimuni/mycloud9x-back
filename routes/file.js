@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const path = require('path');
 const fileService = require('../service/fileService');
+const { verifyJwt } = require('../js/jwt');
 
 // 기본업로드. 드라이브를 이용해서 올리는 것 말고,
 // 서버에 프로필 이미지나 기타 자료를 업로드 할 때 사용.
