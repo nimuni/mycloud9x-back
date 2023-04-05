@@ -1,22 +1,23 @@
 const mongoose = require('mongoose');
+const permissionWithSchema = require('./permissionWith');
 const { Schema } = mongoose;
 
-const verifyCodeSchema = new Schema(
+const driveRootSchema = new Schema(
   {
-    email: {
+    name: {
       type: String,
       required: true,
     },
-    verify_code: {
+    path: {
       type: String,
       required: true,
     },
-    verified: {
-      type: Boolean,
+    currentSize: {
+      type: Number,
       required: true,
     },
-    limit: {
-      type: Date,
+    maximumSize: {
+      type: Number,
       required: true,
     },
   },
@@ -25,4 +26,4 @@ const verifyCodeSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model('VerifyCode', verifyCodeSchema);
+module.exports = mongoose.model('DriveRoot', driveRootSchema);
