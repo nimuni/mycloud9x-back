@@ -50,7 +50,7 @@ router.get('/reGenerateAccessToken', async (req, res, next) => {
   }
   try {
     const newAccessToken = reGenerateAccessToken(refreshToken);
-    res.set('Authorization', `Bearer ${accessToken}`);
+    res.set('Authorization', `Bearer ${newAccessToken}`);
     res.status(201).send();
     // res.json({ Authorization: `Bearer ${newAccessToken}` });
   } catch (error) {
