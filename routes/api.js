@@ -32,10 +32,6 @@ router.get('/verifyToken', verifyJwt, async (req, res, next) => {
   console.log('call /api/user/verifyToken');
   res.send('success token verify');
 });
-// router.post('/logout', verifyJwt, (req, res) => {
-//   res.clearCookie('refreshToken');
-//   res.sendStatus(204);
-// });
 router.get('/logout', verifyJwt, (req, res) => {
   res.clearCookie('refreshToken');
   res.redirect('/login');

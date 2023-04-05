@@ -5,7 +5,7 @@ const passport = require('passport');
 const { verifyJwt } = require('../js/jwt');
 
 /* GET user listing. */
-router.get('/', async (req, res, next) => {
+router.get('/', verifyJwt, async (req, res, next) => {
   try {
     let users = await userService.findAll();
     if (users?.length > 0) {
@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
     res.status(500).send('Internal Server Error');
   }
 });
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', verifyJwt, async (req, res, next) => {
   try {
     let user = await userService.findOne({ id: req.params.id });
     if (user) {
