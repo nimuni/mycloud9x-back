@@ -9,13 +9,26 @@ on:
 jobs:
   gitPullAndRestartPm2:
     runs-on: ubuntu-22.04
+    
+    env:
+      CI: false
+    strategy:
+      matrix:
+        node-version: [18.x]
     steps:
     - uses: actions/checkout@v3
-    - name: git pull and restart pm2 instance
-    - shell: bash
-    - run: |
-        cd /var/mycloud9x-back
-        git pull
-        npm install
-        pm2 restart 0
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+    - name: Install modules
+      run : npm install
+      
+#    - shell: bash
+#    - run: |
+#        cd /var/mycloud9x-back
+#        git pull
+#        npm install
+#        pm2 restart 0
     
