@@ -10,11 +10,14 @@ jobs:
   gitPullAndRestartPm2:
     runs-on: ubuntu-22.04
     steps:
-    - name: git pull and restart pm2 instance
-    - shell: bash
-    - run: |
-        cd /var/mycloud9x-back
-        git pull
-        npm install
-        pm2 restart 0
-    
+    - uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: | 
+          cd /var/mycloud9x-back
+          git pull
+          npm install
+          pm2 restart 0   
