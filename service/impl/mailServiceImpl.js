@@ -36,7 +36,7 @@ exports.getContents = async (type, data) => {
 <div style='border:1px solid #c8c8c8; padding:5px;'>
   <p style='color:black'>mycloud9x 서비스의 이메일 인증을 위한 메일입니다..</p>
   <p style='color:black'>아래 버튼을 눌러서 인증을 완료해주세요.</p>
-  <a  href="${process.env.URI_ORIGIN}:${process.env.PORT}/api/user/verifyCode/${data.verifyCode}" 
+  <a  href="${process.env.URI_ORIGIN}/api/user/verifyCode/${data.verifyCode}" 
       onclick="window.open(this.href, '_blank'); return false;">
     인증하기
   </a>
