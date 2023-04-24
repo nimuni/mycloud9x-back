@@ -30,9 +30,7 @@ router.post('/login', async (req, res, next) => {
       //   })
 
       res.cookie('refreshToken', refreshToken, { httpOnly: true });
-      // res.json({ Authorization: `Bearer ${accessToken}` });
-      res.set('Authorization', `Bearer ${accessToken}`);
-      res.redirect(`/`);
+      res.send({'Authorization': `Bearer ${accessToken}`});
     }
   })(req, res, next);
 });
