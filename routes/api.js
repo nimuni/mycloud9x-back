@@ -41,7 +41,7 @@ router.get('/verifyToken', verifyJwt, async (req, res, next) => {
   console.log('call /api/user/verifyToken');
   res.send('success token verify');
 });
-router.get('/reGenerateAccessToken', async (req, res, next) => {
+router.post('/reGenerateAccessToken', async (req, res, next) => {
   console.log('call /api/user/reGenerateAccessToken');
 
   const refreshToken = req.cookies.refreshToken;
@@ -50,13 +50,10 @@ router.get('/reGenerateAccessToken', async (req, res, next) => {
   }
   try {
     const newAccessToken = reGenerateAccessToken(refreshToken);
-    res.set('Authorization', `Bearer ${newAccessToken}`);
-    res.status(201).send();
-    // res.json({ Authorization: `Bearer ${newAccessToken}` });
+    res.json({ Authorization: `Bearer ${newAccessToken}` });
   } catch (error) {
     console.log("error in reGenerateAccessToken")
     console.log(error)
-    res.redirect(`/login`);
   }
 
 });
