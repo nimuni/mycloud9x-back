@@ -49,7 +49,7 @@ app.use(
   })
 );
 // app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
-app.use(cors({origin: URI_ORIGIN, credentials: CREDENTIALS }));
+app.use(cors({origin: process.env.URI_ORIGIN, credentials: process.env.CREDENTIALS }));
 app.use(hpp());
 
 const apiRouter = require('./routes/api');
