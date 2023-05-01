@@ -88,7 +88,7 @@ router.get('/verifyCode/:code', async (req, res, next) => {
     console.log(req.params.code);
     let isVerified = await userService.verifyCode(req.params.code);
     if (isVerified) {
-      const url = `${process.env.URI_ORIGIN}:${process.env.PORT}/login`;
+      const url = `${process.env.URI_ORIGIN}${process.env.PORT == '80' ? `` : `:${process.env.PORT}` }/login`;
       res.redirect(url);
     } else {
       res.status(200).send(false);
