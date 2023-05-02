@@ -14,7 +14,7 @@ router.post('/login', async (req, res, next) => {
       console.log(err)
       console.log(info)
       return res.status(400).json({
-        message: '로그인에 실패했습니다.',
+        message: info?.message || '로그인에 실패했습니다.',
         user: user,
       });
     } else {
