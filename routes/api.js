@@ -10,6 +10,9 @@ router.get('/', function (req, res, next) {
 router.post('/login', async (req, res, next) => {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err || !user) {
+      console.log("/login 에러")
+      console.log(err)
+      console.log(info)
       return res.status(400).json({
         message: '로그인에 실패했습니다.',
         user: user,
