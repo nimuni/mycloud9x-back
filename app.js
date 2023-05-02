@@ -48,8 +48,11 @@ app.use(
     debug: true,
   })
 );
-// app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
-app.use(cors({origin: process.env.URI_ORIGIN, credentials: process.env.CREDENTIALS }));
+// app.use(cors({origin: process.env.URI_ORIGIN, credentials: process.env.CREDENTIALS }));
+app.use(cors({
+  origin: [process.env.URI_ORIGIN, 'http://localhost:3000'],  // 임시로 로컬호스트의 요청 하용 TODO. 로컬호스트 삭제 필요
+  credentials: process.env.CREDENTIALS
+}));
 app.use(hpp());
 
 const apiRouter = require('./routes/api');
