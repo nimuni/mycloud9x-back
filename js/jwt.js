@@ -11,10 +11,12 @@ exports.generateRefreshToken = (user) => {
 };
 exports.accessTokenVerify = (token) => {
   return new Promise((resolve, reject) => {
+    console.log("call accessTokenVerify")
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
       if (err) {
+        console.log("verify error")
         console.error(err);
-        reject(false);
+        reject(err);
       } else {
         resolve(decoded);
       }
@@ -23,10 +25,12 @@ exports.accessTokenVerify = (token) => {
 };
 exports.refreshTokenVerify = (token) => {
   return new Promise((resolve, reject) => {
+    console.log("call refreshTokenVerify")
     jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
       if (err) {
+        console.log("verify error")
         console.error(err);
-        reject(false);
+        reject(err);
       } else {
         resolve(decoded);
       }
@@ -63,6 +67,9 @@ exports.verifyJwt = async (req, res, next) => {
     req.user = decodedAccessToken.data;
     next();
   } catch (error) {
+    console.log("catch error")
+    console.log(error)
+    console.log(error.name)
     // access token이 만료된 경우
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'Invalid access token' });

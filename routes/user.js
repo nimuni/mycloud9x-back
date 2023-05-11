@@ -44,7 +44,9 @@ router.post('/', async (req, res, next) => {
 });
 router.put('/:id', verifyJwt, async (req, res, next) => {
   try {
+    console.log(req.body)
     let user = await userService.update({ id: req.params.id }, req.body);
+    console.log(user)
     if (user) {
       res.status(201).send(user);
     } else {
