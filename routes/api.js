@@ -39,18 +39,22 @@ router.post('/login', async (req, res, next) => {
 });
 
 router.get('/verifyToken', verifyJwt, async (req, res, next) => {
-  console.log('call /api/user/verifyToken');
+  console.log('call /api/verifyToken');
   res.send('success token verify');
 });
 router.post('/reGenerateAccessToken', async (req, res, next) => {
-  console.log('call /api/user/reGenerateAccessToken');
+  console.log('call /api/reGenerateAccessToken');
 
   const refreshToken = req.cookies.refreshToken;
+  console.log("req.cookies")
+  console.log(JSON.stringify(req.cookies))
+  console.log("refreshToken")
+  console.log(refreshToken)
   if (!refreshToken) {
     return res.status(401).json({ message: 'Refresh token is required' });
   }
   try {
-    const newAccessToken = reGenerateAccessToken(refreshToken);
+    const newAccessToken = await reGenerateAccessToken(refreshToken);
     res.json({ Authorization: `Bearer ${newAccessToken}` });
   } catch (error) {
     console.log("error in reGenerateAccessToken")

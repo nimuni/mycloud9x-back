@@ -26,6 +26,7 @@ const userSchema = new Schema(
       default: 'user',
     },
     nickname: String,
+    profile_img: String,
     loginFailCount: {
       type: Number,
       default: 0,

@@ -12,6 +12,8 @@ const projectionUserObj = {
   email: 1,
   email_verified: 1,
   role: 1,
+  profile_img: 1,
+  nickname: 1,
   createdAt: 1,
   updatedAt: 1,
 };
@@ -108,6 +110,7 @@ exports.update = async (findObj, reqBody) => {
     if (!isEmpty(reqBody?.email)) changeObj.email = reqBody.email;
     if (!isEmpty(reqBody?.email_verified)) changeObj.email_verified = reqBody.email_verified;
     if (!isEmpty(reqBody?.role)) changeObj.role = reqBody.role;
+    if (!isEmpty(reqBody?.nickname)) changeObj.nickname = reqBody.nickname;
 
     const changedUser = await userImpl.findOneAndUpdate(findObj, changeObj, projectionUserObj);
     return changedUser;
