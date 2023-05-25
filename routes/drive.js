@@ -58,8 +58,12 @@ router.get('/root/allRootFolder', verifyJwt, async (req, res, next) => {
 });
 router.get('/root/driveRoot/:_id', verifyJwt, async (req, res, next) => {
   try {
-    const driveRoot = await driveRootService.getDriveRoot(req.params._id)
-    res.send(driveRoot);
+    if(req.params._id == ":_id") {
+      res.status(404).send()
+    } else {
+      const driveRoot = await driveRootService.getDriveRoot(req.params._id)
+      res.send(driveRoot);
+    }
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });

@@ -6,13 +6,15 @@ const nodeDiskInfo = require('node-disk-info');
 const { Error } = require('mongoose');
 
 // 서버 파일시스템 폴더 패스 위치 조회
-exports.getServerPath = async (path=process.cwd()) => {
+exports.getServerPath = async (_path=process.cwd()) => {
   console.log("call getServerPath")
-  console.log(path)
-  const childFolderArray = fs.readdirSync(path, { withFileTypes: true })
+  console.log(`_path=${_path}`)
+  let normalizedPath = path.normalize(_path);
+  console.log(`normalizedPath=${normalizedPath}`)
+  const childFolderArray = fs.readdirSync(normalizedPath, { withFileTypes: true })
     .filter(dirent => dirent.isDirectory());
   return {
-    currentPathArray: path.split("\\"),
+    currentPathArray: normalizedPath.split(path.sep),
     childFolderArray:childFolderArray
   }
 };
